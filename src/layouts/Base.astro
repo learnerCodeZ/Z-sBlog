@@ -1,0 +1,41 @@
+---
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = '一个在嵌入式与 AI 交叉点上折腾的人的博客' } =
+  Astro.props;
+const siteName = 'learnerCodeZ.';
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title ? `${title} · ${siteName}` : siteName}</title>
+    <meta name="description" content={description} />
+    <!-- 防止刷新时主题闪烁：在渲染前就应用已存的主题 -->
+    <script is:inline>
+      (function () {
+        if (localStorage.getItem('theme') === 'light') {
+          document.documentElement.classList.add('light');
+        }
+        if (localStorage.getItem('lang') === 'en') {
+          document.documentElement.lang = 'en';
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <Nav />
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>

@@ -1,0 +1,117 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Base title="博客">
+  <section class="container">
+    <h1>博客</h1>
+    <div class="tabs">
+      <button class="tab active" data-filter="all">全部</button>
+      <button class="tab" data-filter="article">文章</button>
+      <button class="tab" data-filter="essay">随笔</button>
+    </div>
+    {
+      posts.length === 0 ? (
+        <p class="empty">还没有内容。</p>
+      ) : (
+        <ul class="timeline">
+          {posts.map((p) => (
+            <li data-type={p.data.type}>
+              <a href={`/blog/${p.id}/`}>
+                <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
+                <span class="kind">{p.data.type === 'article' ? '文章' : '随笔'}</span>
+                <span class="title">{p.data.title}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      )
+    }
+  </section>
+</Base>
+
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach((tab) => {
+    tab.addEventListener('click', () => {
+      tabs.forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      const filter = tab.getAttribute('data-filter');
+      document.querySelectorAll('.timeline li').forEach((li) => {
+        const type = li.getAttribute('data-type');
+        li.style.display = filter === 'all' || type === filter ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+<style>
+  .tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+  .tab {
+    background: none;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab:hover {
+    color: var(--color-text);
+  }
+  .tab.active {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .timeline li {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .timeline a {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 0;
+    color: var(--color-text);
+    align-items: baseline;
+  }
+  .timeline a:hover {
+    text-decoration: none;
+  }
+  .timeline a:hover .title {
+    color: var(--color-accent);
+  }
+  .date {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+    width: 6rem;
+  }
+  .kind {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+    width: 3rem;
+  }
+  .title {
+    transition: color 0.15s;
+  }
+  .empty {
+    color: var(--color-text-muted);
+  }
+</style>

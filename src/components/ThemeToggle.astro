@@ -1,0 +1,45 @@
+---
+import SunIcon from './icons/Sun.astro';
+import MoonIcon from './icons/Moon.astro';
+---
+
+<button id="theme-toggle" aria-label="切换亮暗模式" title="切换亮暗模式">
+  <span class="icon-sun"><SunIcon /></span>
+  <span class="icon-moon"><MoonIcon /></span>
+</button>
+
+<style>
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    padding: 2px;
+    display: flex;
+    align-items: center;
+  }
+  button:hover {
+    color: var(--color-accent);
+  }
+  /* 默认暗色 → 显示太阳（点一下切到亮）；亮色 → 显示月亮 */
+  .icon-sun {
+    display: flex;
+  }
+  .icon-moon {
+    display: none;
+  }
+  :global(html.light) .icon-sun {
+    display: none;
+  }
+  :global(html.light) .icon-moon {
+    display: flex;
+  }
+</style>
+
+<script>
+  const btn = document.getElementById('theme-toggle');
+  btn?.addEventListener('click', () => {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  });
+</script>

@@ -1,0 +1,348 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+const recentItems = allPosts.slice(0, 5);
+const blogItems = allPosts.slice(0, 3);
+const RECENT_SLOTS = 5;
+const BLOG_SLOTS = 3;
+const PROJECT_SLOTS = 3;
+const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i);
+---
+
+<Base>
+  <!-- hero（关于我） -->
+  <section class="wrap hero">
+    <p class="meta">嵌入式 · AI</p>
+    <h1 class="display">learnerCodeZ</h1>
+    <!-- TODO: 一句话介绍自己 -->
+    <p class="intro">在这里记录折腾、复盘，和正在做的事。</p>
+  </section>
+
+  <!-- 最近：鼠标进区域滚轮 → 横移；5 个位置 -->
+  <section class="wrap">
+    <h2 class="section-title">最近</h2>
+    <div class="recent" id="recent">
+      <div class="track">
+        {
+          recentItems.map((item) => (
+            <a class="card" href={`/blog/${item.id}/`}>
+              <span class="kind">{item.data.type === 'article' ? '文章' : '随笔'}</span>
+              <span class="card-title">{item.data.title}</span>
+              <span class="date">{item.data.date.toLocaleDateString('zh-CN')}</span>
+            </a>
+          ))
+        }
+        {
+          range(RECENT_SLOTS - recentItems.length).map(() => (
+            <div class="card placeholder">
+              <span class="kind">—</span>
+              <span class="card-title">待添加</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <a href="/blog" class="more">查看更多 →</a>
+  </section>
+
+  <!-- 博客：carousel + 翻页按钮；3 个位置 -->
+  <section class="wrap">
+    <div class="section-head">
+      <h2 class="section-title">博客</h2>
+      <div class="carousel-controls">
+        <button class="carousel-btn" data-prev aria-label="上一页">←</button>
+        <button class="carousel-btn" data-next aria-label="下一页">→</button>
+      </div>
+    </div>
+    <div class="carousel-viewport" data-carousel>
+      <div class="carousel-track">
+        {
+          blogItems.map((p) => (
+            <a class="card" href={`/blog/${p.id}/`}>
+              <span class="kind">{p.data.type === 'article' ? '文章' : '随笔'}</span>
+              <span class="card-title">{p.data.title}</span>
+              <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
+            </a>
+          ))
+        }
+        {
+          range(BLOG_SLOTS - blogItems.length).map(() => (
+            <div class="card placeholder">
+              <span class="kind">—</span>
+              <span class="card-title">待添加</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <a href="/blog" class="more">查看更多 →</a>
+  </section>
+
+  <!-- 项目：carousel + 翻页按钮；3 个位置 -->
+  <section class="wrap">
+    <div class="section-head">
+      <h2 class="section-title">项目</h2>
+      <div class="carousel-controls">
+        <button class="carousel-btn" data-prev aria-label="上一页">←</button>
+        <button class="carousel-btn" data-next aria-label="下一页">→</button>
+      </div>
+    </div>
+    <div class="carousel-viewport" data-carousel>
+      <div class="carousel-track">
+        {
+          range(PROJECT_SLOTS).map(() => (
+            <div class="card placeholder">
+              <span class="kind">—</span>
+              <span class="card-title">待添加</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <a href="/projects" class="more">查看更多 →</a>
+  </section>
+</Base>
+
+<script>
+  // 效果1：鼠标在“最近”区域内向下滚轮 → 横向滚动；到头/尾放行垂直
+  const recent = document.getElementById('recent');
+  if (recent) {
+    recent.addEventListener(
+      'wheel',
+      (e) => {
+        const vertical = Math.abs(e.deltaY) > Math.abs(e.deltaX);
+        if (!vertical) return;
+        const max = recent.scrollWidth - recent.clientWidth;
+        const canRoll = e.deltaY > 0 ? recent.scrollLeft < max - 1 : recent.scrollLeft > 1;
+        if (canRoll) {
+          e.preventDefault();
+          recent.scrollLeft += e.deltaY;
+        }
+      },
+      { passive: false }
+    );
+  }
+
+  // 效果2：center-mode carousel —— 当前卡片居中高亮，其他淡化退后
+  document.querySelectorAll('[data-carousel]').forEach((vp) => {
+    const root = vp.closest('.wrap');
+    const track = vp.querySelector('.carousel-track');
+    const prev = root?.querySelector('[data-prev]') as HTMLButtonElement | null;
+    const next = root?.querySelector('[data-next]') as HTMLButtonElement | null;
+    if (!track || !prev || !next) return;
+    const cards = Array.from(track.querySelectorAll('.card'));
+    if (!cards.length) return;
+    let active = 0;
+
+    const layout = () => {
+      const cardW = cards[0].getBoundingClientRect().width;
+      const gap = 16; // 1rem
+      const offset = (vp.clientWidth - cardW) / 2;
+      track.style.transform = `translateX(${offset - active * (cardW + gap)}px)`;
+    };
+    const render = () => {
+      cards.forEach((c, i) => c.classList.toggle('active', i === active));
+      prev.disabled = active <= 0;
+      next.disabled = active >= cards.length - 1;
+    };
+    prev.addEventListener('click', () => {
+      if (active > 0) {
+        active--;
+        layout();
+        render();
+      }
+    });
+    next.addEventListener('click', () => {
+      if (active < cards.length - 1) {
+        active++;
+        layout();
+        render();
+      }
+    });
+    window.addEventListener('resize', layout);
+    layout();
+    render();
+  });
+</script>
+
+<style>
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+  }
+  .hero {
+    padding-top: 5rem;
+  }
+  .meta {
+    color: var(--color-accent);
+    font-size: 1.4rem;
+    letter-spacing: 0.06em;
+    margin: 0 0 1.2rem;
+  }
+  .display {
+    font-family: Georgia, "PingFang SC", "Songti SC", serif;
+    font-size: 2.8rem;
+    line-height: 1.2;
+    font-weight: 600;
+    margin: 0 0 1.5rem;
+    letter-spacing: -0.01em;
+  }
+  .intro {
+    color: var(--color-text-muted);
+    font-size: 1.05rem;
+    max-width: 38ch;
+    line-height: 1.7;
+  }
+
+  .section-title {
+    font-family: Georgia, "PingFang SC", serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 1.5rem;
+  }
+
+  /* 卡片通用 */
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    padding: 2.2rem 1.7rem;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    color: var(--color-text);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  a.card:hover {
+    text-decoration: none;
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+  .card.placeholder {
+    border-style: dashed;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .card .kind {
+    color: var(--color-accent);
+    font-size: 0.8rem;
+  }
+  .card-title {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  .card .date {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 效果1：最近横滚 */
+  .recent {
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    margin-bottom: 1.5rem;
+  }
+  .recent::-webkit-scrollbar {
+    display: none;
+  }
+  .recent .track {
+    display: flex;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+  }
+  .recent .track .card {
+    flex: 0 0 320px;
+  }
+
+  /* 效果2：carousel */
+  .section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .section-head .section-title {
+    margin: 0;
+  }
+  .carousel-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .carousel-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .carousel-btn:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  .carousel-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .carousel-viewport {
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .carousel-track {
+    display: flex;
+    gap: 1rem;
+    transition: transform 0.4s ease;
+    will-change: transform;
+  }
+  .carousel-track .card {
+    flex: 0 0 340px;
+    opacity: 0.35;
+    transform: scale(0.9);
+    transition: opacity 0.3s, transform 0.3s, border-color 0.3s;
+  }
+  .carousel-track .card.active {
+    opacity: 1;
+    transform: scale(1);
+    border-color: var(--color-accent);
+  }
+
+  .more {
+    display: inline-block;
+    font-size: 0.9rem;
+  }
+
+  @media (max-width: 700px) {
+    .display {
+      font-size: 2.2rem;
+    }
+    .hero {
+      padding-top: 3.5rem;
+    }
+    .recent .track .card {
+      flex: 0 0 220px;
+    }
+    .carousel-track .card {
+      flex: 0 0 calc((100% - 1rem) / 2);
+    }
+  }
+  @media (max-width: 480px) {
+    .carousel-track .card {
+      flex: 0 0 100%;
+    }
+  }
+</style>

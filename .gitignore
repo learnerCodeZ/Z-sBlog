@@ -1,0 +1,25 @@
+# 私有规划与素材，不开源
+local/
+
+# 依赖
+node_modules/
+
+# 构建产物
+dist/
+.output/
+.astro/
+
+# 环境与密钥
+.env
+.env.*
+!.env.example
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# 日志
+*.log
+npm-debug.log*

@@ -1,0 +1,89 @@
+/* 轻量 reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+}
+
+/* 主题变量：默认暗色，html.light 覆盖为亮色 */
+:root {
+  --color-bg: #0e0f11;
+  --color-surface: #17181b;
+  --color-border: #26282d;
+  --color-text: #e9e7e1;
+  --color-text-muted: #9b998f;
+  --color-accent: #e8b166;
+  --color-accent-soft: rgba(232, 177, 102, 0.12);
+}
+
+:root.light,
+html.light {
+  --color-bg: #fafaf7;
+  --color-surface: #f2f1ec;
+  --color-border: #e2e1da;
+  --color-text: #1c1c1a;
+  --color-text-muted: #6b6a63;
+  --color-accent: #c8881f;
+  --color-accent-soft: rgba(200, 136, 31, 0.1);
+}
+
+html {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei",
+    "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+img,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+.container {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 4rem 1.5rem;
+}
+
+.container h1 {
+  font-family: Georgia, "PingFang SC", "Songti SC", serif;
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0 0 2rem;
+}
+
+.empty {
+  color: var(--color-text-muted);
+}
+
+::selection {
+  background: var(--color-accent-soft);
+}

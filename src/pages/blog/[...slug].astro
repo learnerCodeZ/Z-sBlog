@@ -1,0 +1,87 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+  }));
+}
+
+const { slug } = Astro.params;
+const posts = await getCollection('posts');
+const post = posts.find((p) => p.id === slug);
+
+if (!post) {
+  return new Response(null, { status: 404, statusText: 'Not found' });
+}
+
+const { Content } = await render(post);
+const { title, date, type, tags, summary } = post.data;
+---
+
+<Base title={title} description={summary}>
+  <article class="container article">
+    <p class="kind">{type === 'article' ? '文章' : '随笔'}</p>
+    <h1>{title}</h1>
+    <p class="meta">
+      <time datetime={date.toISOString()}>{date.toLocaleDateString('zh-CN')}</time>
+      {tags.length > 0 && <span> · {tags.join(' / ')}</span>}
+    </p>
+    <Content />
+  </article>
+</Base>
+
+<style>
+  .article {
+    max-width: 720px;
+  }
+  .kind {
+    color: var(--color-accent);
+    font-size: 0.85rem;
+    margin: 0 0 0.5rem;
+  }
+  .article :global(p) {
+    line-height: 1.75;
+    margin: 1.1rem 0;
+  }
+  .article :global(h2) {
+    font-family: Georgia, "PingFang SC", serif;
+    margin: 2.2rem 0 1rem;
+  }
+  .article :global(h3) {
+    margin: 1.8rem 0 0.8rem;
+  }
+  .article :global(pre) {
+    background: var(--color-surface);
+    padding: 1rem 1.2rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    border: 1px solid var(--color-border);
+    font-size: 0.9rem;
+  }
+  .article :global(code) {
+    font-family: "JetBrains Mono", Consolas, monospace;
+  }
+  .article :global(:not(pre) > code) {
+    background: var(--color-surface);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  .article :global(blockquote) {
+    border-left: 3px solid var(--color-accent);
+    margin: 1.5rem 0;
+    padding: 0.2rem 0 0.2rem 1rem;
+    color: var(--color-text-muted);
+  }
+  .article :global(a) {
+    color: var(--color-accent);
+  }
+  .meta {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 2.5rem;
+  }
+</style>

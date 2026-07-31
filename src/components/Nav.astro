@@ -1,0 +1,97 @@
+---
+import { SITE, NAV_LINKS } from '../data/site';
+import ThemeToggle from './ThemeToggle.astro';
+import LangToggle from './LangToggle.astro';
+import GitHubIcon from './icons/GitHub.astro';
+import BilibiliIcon from './icons/Bilibili.astro';
+
+const path = Astro.url.pathname;
+---
+
+<header>
+  <nav>
+    <a href="/" class="logo">{SITE.name}</a>
+    <div class="links">
+      {
+        NAV_LINKS.map((l) => (
+          <a
+            href={l.href}
+            class:list={['nav-link', { active: path.startsWith(l.href) }]}
+          >
+            {l.label}
+          </a>
+        ))
+      }
+    </div>
+    <div class="social">
+      <a href={SITE.social.github} target="_blank" rel="noopener" aria-label="GitHub">
+        <GitHubIcon />
+      </a>
+      <a href={SITE.social.bilibili} target="_blank" rel="noopener" aria-label="Bilibili">
+        <BilibiliIcon />
+      </a>
+      <LangToggle />
+      <ThemeToggle />
+    </div>
+  </nav>
+</header>
+
+<style>
+  header {
+    border-bottom: 1px solid var(--color-border);
+    position: sticky;
+    top: 0;
+    background-color: color-mix(in srgb, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+  nav {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+  }
+  .logo {
+    font-family: Georgia, "PingFang SC", serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  .logo:hover {
+    text-decoration: none;
+  }
+  .links {
+    display: flex;
+    gap: 1.25rem;
+    flex: 1;
+  }
+  .nav-link {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+  .nav-link:hover,
+  .nav-link.active {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .social {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .social a {
+    color: var(--color-text-muted);
+    display: flex;
+  }
+  .social a:hover {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  @media (max-width: 600px) {
+    .links {
+      display: none;
+    }
+  }
+</style>
