@@ -24,7 +24,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
 
   <!-- 最近：鼠标进区域滚轮 → 横移；5 个位置 -->
   <section class="wrap">
-    <h2 class="section-title">最近</h2>
+    <h2 class="section-title"><a href="/blog">最近</a></h2>
     <div class="recent" id="recent">
       <div class="track">
         {
@@ -46,13 +46,12 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
         }
       </div>
     </div>
-    <a href="/blog" class="more">查看更多 →</a>
   </section>
 
   <!-- 博客：carousel + 翻页按钮；3 个位置 -->
   <section class="wrap">
     <div class="section-head">
-      <h2 class="section-title">博客</h2>
+      <h2 class="section-title"><a href="/blog">博客</a></h2>
       <div class="carousel-controls">
         <button class="carousel-btn" data-prev aria-label="上一页">←</button>
         <button class="carousel-btn" data-next aria-label="下一页">→</button>
@@ -79,13 +78,12 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
         }
       </div>
     </div>
-    <a href="/blog" class="more">查看更多 →</a>
   </section>
 
   <!-- 项目：carousel + 翻页按钮；3 个位置 -->
   <section class="wrap">
     <div class="section-head">
-      <h2 class="section-title">项目</h2>
+      <h2 class="section-title"><a href="/projects">项目</a></h2>
       <div class="carousel-controls">
         <button class="carousel-btn" data-prev aria-label="上一页">←</button>
         <button class="carousel-btn" data-next aria-label="下一页">→</button>
@@ -103,7 +101,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
         }
       </div>
     </div>
-    <a href="/projects" class="more">查看更多 →</a>
   </section>
 </Base>
 
@@ -204,6 +201,14 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     font-size: 1.5rem;
     font-weight: 600;
     margin: 0 0 1.5rem;
+  }
+  .section-title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+  .section-title a:hover {
+    color: var(--color-accent);
   }
 
   /* 卡片通用 */
@@ -319,11 +324,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     opacity: 1;
     transform: scale(1);
     border-color: var(--color-accent);
-  }
-
-  .more {
-    display: inline-block;
-    font-size: 0.9rem;
   }
 
   @media (max-width: 700px) {
