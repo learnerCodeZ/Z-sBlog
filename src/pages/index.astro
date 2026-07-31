@@ -102,6 +102,20 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
       </div>
     </div>
   </section>
+
+  <!-- 房间入口 -->
+  <section class="wrap">
+    <a class="room-cta" href="/room">
+      <span class="room-title">走进我的房间</span>
+      <span class="door" aria-hidden="true">
+        <svg width="46" height="58" viewBox="0 0 46 58" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="11" y="4" width="24" height="50" rx="2"></rect>
+          <line x1="11" y1="4" x2="11" y2="54"></line>
+          <circle cx="29" cy="29" r="2.2" fill="currentColor" stroke="none"></circle>
+        </svg>
+      </span>
+    </a>
+  </section>
 </Base>
 
 <script>
@@ -324,6 +338,39 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     opacity: 1;
     transform: scale(1);
     border-color: var(--color-accent);
+  }
+
+  /* 房间入口 */
+  .room-cta {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
+    padding: 2.5rem 2rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    color: var(--color-text);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .room-cta:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .room-title {
+    font-family: Georgia, "PingFang SC", serif;
+    font-size: 1.6rem;
+    font-weight: 600;
+  }
+  .door {
+    color: var(--color-text-muted);
+    display: flex;
+    transition: color 0.2s, transform 0.2s;
+  }
+  .room-cta:hover .door {
+    color: var(--color-accent);
+    transform: translateX(3px);
   }
 
   @media (max-width: 700px) {
