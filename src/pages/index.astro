@@ -37,7 +37,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
 
   <!-- 最近：鼠标进区域滚轮 → 横移；5 个位置 -->
   <section class="wrap">
-    <h2 class="section-title"><a href="/blog">最近</a></h2>
+    <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/blog`}>最近</a></h2>
     <div class="recent" id="recent">
       <div class="track">
         {
@@ -64,7 +64,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
   <!-- 博客：carousel + 翻页按钮；3 个位置 -->
   <section class="wrap">
     <div class="section-head">
-      <h2 class="section-title"><a href="/blog">博客</a></h2>
+      <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/blog`}>博客</a></h2>
       <div class="carousel-controls">
         <button class="carousel-btn" data-prev aria-label="上一页">←</button>
         <button class="carousel-btn" data-next aria-label="下一页">→</button>
@@ -96,7 +96,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
   <!-- 项目：carousel + 翻页按钮（和博客同） -->
   <section class="wrap">
     <div class="section-head">
-      <h2 class="section-title"><a href="/projects">项目</a></h2>
+      <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/projects`}>项目</a></h2>
       <div class="carousel-controls">
         <button class="carousel-btn" data-prev aria-label="上一页">←</button>
         <button class="carousel-btn" data-next aria-label="下一页">→</button>
