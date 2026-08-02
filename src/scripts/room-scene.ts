@@ -173,7 +173,32 @@ export function initRoom(container: HTMLElement): () => void {
   // 椅子 + 男孩（桌前，面朝 -z 看屏幕）
   box(0.5, 0.05, 0.5, 0x2a2a2e, [-0.8, 0.45, -1.5]); // 座椅
   box(0.5, 0.6, 0.05, 0x2a2a2e, [-0.8, 0.75, -1.28]); // 椅背
-  box(0.35, 0.55, 0.3, 0xe8b166, [-0.8, 0.73, -1.5]); // 占位男孩
+  // 椅子腿：中柱 + 五星脚 + 滚轮
+  const chairPost = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.04, 0.35, 14),
+    new THREE.MeshStandardMaterial({ color: 0x2a2a2e })
+  );
+  chairPost.position.set(-0.8, 0.275, -1.5);
+  scene.add(chairPost);
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    const dx = Math.cos(a);
+    const dz = Math.sin(a);
+    const leg = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, 0.04, 0.42),
+      new THREE.MeshStandardMaterial({ color: 0x2a2a2e })
+    );
+    leg.position.set(-0.8 + dx * 0.21, 0.08, -1.5 + dz * 0.21);
+    leg.rotation.y = Math.PI / 2 - a;
+    scene.add(leg);
+    const wheel = new THREE.Mesh(
+      new THREE.SphereGeometry(0.045, 12, 12),
+      new THREE.MeshStandardMaterial({ color: 0x141414 })
+    );
+    wheel.position.set(-0.8 + dx * 0.42, 0.045, -1.5 + dz * 0.42);
+    scene.add(wheel);
+  }
+  // 人物待定（椅上暂空）
 
   // 昼夜联动
   const applyTheme = () => {
