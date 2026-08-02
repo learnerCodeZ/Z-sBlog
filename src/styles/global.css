@@ -108,3 +108,30 @@ footer {
 .footer-inner a:hover {
   color: var(--color-accent);
 }
+
+/* 右下角浮动门（房间彩蛋入口） */
+.room-float {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  color: var(--color-text-muted);
+  opacity: 0.45;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 20;
+  transition: opacity 0.2s, color 0.2s, transform 0.2s;
+}
+.room-float:hover {
+  opacity: 1;
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+.room-float-tip {
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.room-float:hover .room-float-tip {
+  opacity: 1;
+}

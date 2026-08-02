@@ -10,7 +10,7 @@ const path = Astro.url.pathname;
 
 <header>
   <nav>
-    <a href="/" class="logo">{SITE.name}</a>
+    <a href="/" class="logo" id="siteLogo">{SITE.name}</a>
     <div class="links">
       {
         NAV_LINKS.map((l) => (
@@ -95,3 +95,23 @@ const path = Astro.url.pathname;
     }
   }
 </style>
+
+<script>
+  // logo：单点回首页；280ms 内连点 3 次 → 进房间（彩蛋）
+  let logoClicks = 0;
+  let logoTimer: number | undefined;
+  document.getElementById('siteLogo')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    logoClicks++;
+    window.clearTimeout(logoTimer);
+    if (logoClicks >= 3) {
+      logoClicks = 0;
+      window.location.href = import.meta.env.BASE_URL + 'room';
+    } else {
+      logoTimer = window.setTimeout(() => {
+        window.location.href = import.meta.env.BASE_URL;
+        logoClicks = 0;
+      }, 280);
+    }
+  });
+</script>

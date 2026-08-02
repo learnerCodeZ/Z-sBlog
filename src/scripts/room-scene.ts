@@ -56,6 +56,10 @@ export function initRoom(container: HTMLElement): () => void {
   const lampLight = new THREE.PointLight(0xe8b166, 0.7, 2.8);
   lampLight.position.set(0.8, 1.3, -1.8);
   scene.add(lampLight);
+  // 椅区补光（提亮桌下暗区，让椅子光影更明显）
+  const fillLight = new THREE.PointLight(0xffffff, 0.35, 5);
+  fillLight.position.set(-0.5, 1.8, -0.8);
+  scene.add(fillLight);
 
   const box = (
     w: number,
@@ -142,23 +146,54 @@ export function initRoom(container: HTMLElement): () => void {
   box(0.9, 0.7, 0.04, 0x807e7a, [-2.5, 0.4, -2.03]); // 左侧板
   box(0.9, 0.7, 0.04, 0x807e7a, [-2.5, 0.4, 0.43]); // 右侧板
   box(0.88, 0.66, 0.04, 0x6a6864, [-2.5, 0.4, -0.8]); // 中隔（分2格）
-  // 柜内物品：格1（左格）几本书 + 收纳盒
+  // 柜内暂空（物品待后续添加）
+
+  // RoboMaster EP（桌下靠窗）—— 履带底盘 + 云台 + 发射器 + 红蓝装甲
+  const ep = new THREE.Group();
+  ep.position.set(0.6, 0, -2.2);
+  const addEp = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.castShadow = true;
+    m.receiveShadow = true;
+    ep.add(m);
+  };
+  const epBlack = new THREE.MeshStandardMaterial({ color: 0x1a1a1e, roughness: 0.55, metalness: 0.3 });
+  const epGray = new THREE.MeshStandardMaterial({ color: 0x3a3a3e, roughness: 0.6 });
+  const epRed = new THREE.MeshStandardMaterial({ color: 0xd02828, roughness: 0.5 });
+  const epBlue = new THREE.MeshStandardMaterial({ color: 0x2848d0, roughness: 0.5 });
+  // 底盘
+  addEp(new RoundedBoxGeometry(0.42, 0.12, 0.5, 2, 0.02), epBlack, 0, 0.16, 0);
+  // 4 个麦克纳姆轮（4 角，圆柱横放）
+  const wheelGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 16);
   [
-    [-1.6, 0x4a6680],
-    [-1.42, 0xa04040],
-    [-1.24, 0xc0a040],
-  ].forEach(([bz, c]) => {
-    box(0.04, 0.42, 0.16, c as number, [-2.72, 0.31, bz as number]); // 书（书脊朝前）
+    [-0.2, 0.2],
+    [0.2, 0.2],
+    [-0.2, -0.2],
+    [0.2, -0.2],
+  ].forEach(([x, z]) => {
+    addEp(wheelGeo, epGray, x, 0.08, z);
+    ep.children[ep.children.length - 1].rotation.x = Math.PI / 2;
   });
-  box(0.5, 0.18, 0.36, 0x707074, [-2.66, 0.16, -1.0]); // 收纳盒
-  // 格2（右格）书 + 木盒
-  [
-    [-0.42, 0x508050],
-    [-0.24, 0xc06030],
-  ].forEach(([bz, c]) => {
-    box(0.04, 0.4, 0.16, c as number, [-2.72, 0.3, bz as number]);
-  });
-  box(0.3, 0.24, 0.3, 0x80604a, [-2.7, 0.19, 0.08]); // 木盒
+  // 装甲条（前红后蓝，RM 阵营色）
+  addEp(new THREE.BoxGeometry(0.44, 0.04, 0.03), epRed, 0, 0.17, 0.26);
+  addEp(new THREE.BoxGeometry(0.44, 0.04, 0.03), epBlue, 0, 0.17, -0.26);
+  // 机械臂（底座 + 大臂 + 小臂 + 夹爪）
+  addEp(new THREE.CylinderGeometry(0.06, 0.07, 0.06, 14), epBlack, 0, 0.25, 0); // 底座
+  const arm1 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), epBlack);
+  arm1.position.set(0, 0.35, 0.04);
+  arm1.rotation.x = -0.4;
+  arm1.castShadow = true;
+  ep.add(arm1);
+  const arm2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.15, 0.05), epBlack);
+  arm2.position.set(0, 0.44, 0.12);
+  arm2.rotation.x = -1.0;
+  arm2.castShadow = true;
+  ep.add(arm2);
+  // 末端夹爪
+  addEp(new THREE.BoxGeometry(0.015, 0.05, 0.03), epGray, -0.025, 0.49, 0.18);
+  addEp(new THREE.BoxGeometry(0.015, 0.05, 0.03), epGray, 0.025, 0.49, 0.18);
+  scene.add(ep);
   // 4 扇柜门（可点击向外打开；前2门/后2门各共享一格）
   const doors: { group: THREE.Group; angle: number; target: number }[] = [];
   const doorMeshes: THREE.Mesh[] = [];
@@ -261,6 +296,9 @@ export function initRoom(container: HTMLElement): () => void {
   renderer.domElement.style.cursor = 'default';
   let draggingCurtain = false;
   let lastCurtainX = 0;
+  let draggingChair = false;
+  const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+  const hitGround = new THREE.Vector3();
   const moveCurtain = (clientX: number) => {
     const dx = clientX - lastCurtainX;
     lastCurtainX = clientX;
@@ -278,11 +316,15 @@ export function initRoom(container: HTMLElement): () => void {
       draggingCurtain = true;
       controls.enabled = false;
       lastCurtainX = e.clientX;
+    } else if (raycaster.intersectObjects(chairParts).length > 0) {
+      draggingChair = true;
+      controls.enabled = false;
     }
   });
   window.addEventListener('pointerup', () => {
     draggingCurtain = false;
-    controls.enabled = true; // 恢复视角旋转
+    draggingChair = false;
+    controls.enabled = true;
   });
   renderer.domElement.addEventListener('pointermove', (e) => {
     const rect = renderer.domElement.getBoundingClientRect();
@@ -293,10 +335,18 @@ export function initRoom(container: HTMLElement): () => void {
       moveCurtain(e.clientX);
       return;
     }
+    if (draggingChair) {
+      raycaster.ray.intersectPlane(groundPlane, hitGround);
+      // 限制在开敞区，考虑椅子半径 0.25，不进桌子/柜子区域
+      chair.position.x = THREE.MathUtils.clamp(hitGround.x, -1.7, 2.6);
+      chair.position.z = THREE.MathUtils.clamp(hitGround.z, -1.8, 1.5);
+      return;
+    }
     const hoverBoard = raycaster.intersectObject(board).length > 0;
     const hoverCurtain = raycaster.intersectObject(curtain).length > 0;
+    const hoverChair = raycaster.intersectObjects(chairParts).length > 0;
     renderer.domElement.style.cursor =
-      hoverBoard || hoverCurtain ? 'pointer' : 'default';
+      hoverBoard || hoverCurtain || hoverChair ? 'pointer' : 'default';
     boardEdges.visible = hoverBoard;
     const tip = document.getElementById('roomTip');
     if (tip) {
@@ -314,11 +364,20 @@ export function initRoom(container: HTMLElement): () => void {
     pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(pointer, camera);
-    const hitDoor = raycaster.intersectObjects(doorMeshes);
-    if (hitDoor.length > 0) {
+    if (raycaster.intersectObjects(chairParts).length > 0) {
+      chairSpin += 0.12; // 点击拨动转椅
+    } else if (raycaster.intersectObjects(doorMeshes).length > 0) {
+      const hitDoor = raycaster.intersectObjects(doorMeshes);
       const idx = hitDoor[0].object.userData.doorIndex;
-      const d = doors[idx];
-      d.target = d.target !== 0 ? 0 : d.angle; // 点击开关门
+      const doorZ = doorDefs[idx][1];
+      // 椅子挡在门前（靠近柜 + z 在门范围内）→ 门打不开
+      const blocked =
+        chair.position.x < -1.0 &&
+        Math.abs(chair.position.z - doorZ) < 0.4;
+      if (!blocked) {
+        const d = doors[idx];
+        d.target = d.target !== 0 ? 0 : d.angle;
+      }
     } else if (raycaster.intersectObject(board).length > 0) {
       window.location.href = import.meta.env.BASE_URL + 'guestbook';
     }
@@ -373,35 +432,43 @@ export function initRoom(container: HTMLElement): () => void {
   tablet.add(tScreen);
   scene.add(tablet);
 
-  // 椅子 + 男孩（桌前，面朝 -z 看屏幕）
-  box(0.5, 0.05, 0.5, 0x2a2a2e, [-0.8, 0.45, -1.5]); // 座椅
-  box(0.5, 0.6, 0.05, 0x2a2a2e, [-0.8, 0.75, -1.28]); // 椅背
-  // 椅子腿：中柱 + 五星脚 + 滚轮
-  const chairPost = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.04, 0.04, 0.35, 14),
-    new THREE.MeshStandardMaterial({ color: 0x2a2a2e })
-  );
-  chairPost.position.set(-0.8, 0.275, -1.5);
-  scene.add(chairPost);
+  // 椅子（上半可旋转，下半固定）
+  const chair = new THREE.Group();
+  chair.position.set(-0.8, 0, -1.5);
+  const chairTop = new THREE.Group(); // 座椅 + 椅背（点击旋转）
+  const chairBase = new THREE.Group(); // 中柱 + 五星腿 + 轮（固定）
+  const chairParts: THREE.Object3D[] = [];
+  let chairSpin = 0;
+  const addPart = (
+    parent: THREE.Group,
+    geo: THREE.BufferGeometry,
+    mat: THREE.Material,
+    x: number,
+    y: number,
+    z: number,
+    ry = 0
+  ) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.rotation.y = ry;
+    m.castShadow = true;
+    m.receiveShadow = true;
+    parent.add(m);
+    chairParts.push(m);
+  };
+  addPart(chairTop, new RoundedBoxGeometry(0.5, 0.05, 0.5, 2, 0.02), new THREE.MeshStandardMaterial({ color: 0x2a2a2e }), 0, 0.45, 0);
+  addPart(chairTop, new RoundedBoxGeometry(0.5, 0.6, 0.05, 2, 0.02), new THREE.MeshStandardMaterial({ color: 0x2a2a2e }), 0, 0.75, 0.22);
+  addPart(chairBase, new THREE.CylinderGeometry(0.04, 0.04, 0.35, 14), new THREE.MeshStandardMaterial({ color: 0x2a2a2e }), 0, 0.275, 0);
   for (let i = 0; i < 5; i++) {
     const a = (i / 5) * Math.PI * 2;
     const dx = Math.cos(a);
     const dz = Math.sin(a);
-    const leg = new THREE.Mesh(
-      new THREE.BoxGeometry(0.06, 0.04, 0.42),
-      new THREE.MeshStandardMaterial({ color: 0x2a2a2e })
-    );
-    leg.position.set(-0.8 + dx * 0.21, 0.08, -1.5 + dz * 0.21);
-    leg.rotation.y = Math.PI / 2 - a;
-    scene.add(leg);
-    const wheel = new THREE.Mesh(
-      new THREE.SphereGeometry(0.045, 12, 12),
-      new THREE.MeshStandardMaterial({ color: 0x141414 })
-    );
-    wheel.position.set(-0.8 + dx * 0.42, 0.045, -1.5 + dz * 0.42);
-    scene.add(wheel);
+    addPart(chairBase, new THREE.BoxGeometry(0.06, 0.04, 0.42), new THREE.MeshStandardMaterial({ color: 0x2a2a2e }), dx * 0.21, 0.08, dz * 0.21, Math.PI / 2 - a);
+    addPart(chairBase, new THREE.SphereGeometry(0.045, 12, 12), new THREE.MeshStandardMaterial({ color: 0x141414 }), dx * 0.42, 0.045, dz * 0.42);
   }
-  // 人物待定（椅上暂空）
+  chair.add(chairTop);
+  chair.add(chairBase);
+  scene.add(chair);
 
   // 昼夜联动
   const applyTheme = () => {
@@ -437,6 +504,8 @@ export function initRoom(container: HTMLElement): () => void {
     for (const d of doors) {
       d.group.rotation.y += (d.target - d.group.rotation.y) * 0.15;
     }
+    chairTop.rotation.y += chairSpin;
+    chairSpin *= 0.97;
     controls.update();
     renderer.render(scene, camera);
   };
