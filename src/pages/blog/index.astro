@@ -22,7 +22,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
         <ul class="timeline">
           {posts.map((p) => (
             <li data-type={p.data.type}>
-              <a href={`${import.meta.env.BASE_URL}blog/${p.id}/`}>
+              <a href={`${import.meta.env.BASE_URL}/blog/${p.id}/`}>
                 <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
                 <span class="kind">{p.data.type === 'article' ? '文章' : '随笔'}</span>
                 <span class="title">{p.data.title}</span>

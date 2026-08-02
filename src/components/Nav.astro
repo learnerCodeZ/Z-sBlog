@@ -15,7 +15,7 @@ const path = Astro.url.pathname;
       {
         NAV_LINKS.map((l) => (
           <a
-            href={`${import.meta.env.BASE_URL}${l.href.slice(1)}`}
+            href={`${import.meta.env.BASE_URL}${l.href}`}
             class:list={['nav-link', { active: path.startsWith(l.href) }]}
           >
             {l.label}
@@ -106,10 +106,10 @@ const path = Astro.url.pathname;
     window.clearTimeout(logoTimer);
     if (logoClicks >= 3) {
       logoClicks = 0;
-      window.location.href = import.meta.env.BASE_URL + 'room';
+      window.location.href = import.meta.env.BASE_URL + '/room';
     } else {
       logoTimer = window.setTimeout(() => {
-        window.location.href = import.meta.env.BASE_URL;
+        window.location.href = import.meta.env.BASE_URL + '/';
         logoClicks = 0;
       }, 280);
     }

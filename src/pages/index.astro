@@ -17,7 +17,7 @@ const recent = [
     kind: '项目',
     title: p.name,
     date: new Date(p.published),
-    link: import.meta.env.BASE_URL + 'projects#' + p.slug,
+    link: import.meta.env.BASE_URL + '/projects#' + p.slug,
   })),
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const blogItems = allPosts.slice(0, 3);
@@ -74,7 +74,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
       <div class="carousel-track">
         {
           blogItems.map((p) => (
-            <a class="card" href={`${import.meta.env.BASE_URL}blog/${p.id}/`}>
+            <a class="card" href={`${import.meta.env.BASE_URL}/blog/${p.id}/`}>
               <span class="kind">{p.data.type === 'article' ? '文章' : '随笔'}</span>
               <span class="card-title">{p.data.title}</span>
               <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
@@ -106,7 +106,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
       <div class="carousel-track">
         {
           PROJECTS.map((p) => (
-            <a class="card project-card" href={import.meta.env.BASE_URL + 'projects#' + p.slug}>
+            <a class="card project-card" href={import.meta.env.BASE_URL + '/projects#' + p.slug}>
               <span class={`kind status-${p.status}`}>
                 {p.status === 'active'
                   ? '● ACTIVE'
