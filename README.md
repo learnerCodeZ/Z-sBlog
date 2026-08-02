@@ -25,7 +25,7 @@
 | 内容模型 | Astro content collections | 文章 / 随笔 双集合 |
 | 评论 | Waline（待定） | 可匿名、国内友好 |
 | 搜索 | Pagefind | 纯静态、构建期生成 |
-| 部署 | GitHub Pages → 自有域名 | 见 [`develplan/deployment.md`](./develplan/deployment.md) |
+| 部署 | GitHub Pages ✅ | https://learnerCodeZ.github.io/Z-sBlog |
 
 > 视觉调性尚未最终拍板，但不影响以上结构选型。详见 [`develplan/design.md`](./develplan/design.md)。
 

@@ -10,7 +10,7 @@
 - **样式：手写 CSS + CSS 变量**（不用 Tailwind——设计本就是变量驱动的，手写更轻、无版本兼容负担）。
 - **内容架构**：文章和随笔合并为单一 `posts` collection（`src/content/posts/`），用 frontmatter `type`（`article` / `essay`）区分。父级导航"博客"（`/blog`），列表带 全部 / 文章 / 随笔 tab 筛选。
 - **`local/` 不开源**（私有规划 / 素材），已加入 `.gitignore`。
-- **部署路线**：先 GitHub Pages，后迁自有域名。`site` / `base` 走环境变量驱动，保证迁移只改配置不改代码（见 [deployment.md](./deployment.md)）。
+- **部署路线**：✅ 已上线 GitHub Pages（learnerCodeZ.github.io/Z-sBlog），后迁自有域名。`site` / `base` 走环境变量（SITE_URL / BASE_PATH vars），Node 22 构建。workflow：`.github/workflows/deploy.yml`（自建 Node 构建，非 withastro/action——后者依赖弃用的 upload-artifact v3）。
 
 ## 待定（Do not auto-decide）
 
