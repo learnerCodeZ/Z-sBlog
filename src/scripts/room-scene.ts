@@ -129,6 +129,7 @@ export function initRoom(container: HTMLElement): () => void {
   // 平板（笔记本左侧，副屏，斜立对着人物）
   const tablet = new THREE.Group();
   tablet.position.set(-1.6, 0.79, -2.37);
+  tablet.rotation.order = 'YXZ'; // 先水平斜，再后倾，避免扭转歪斜
   tablet.rotation.x = -0.35; // 后倾
   tablet.rotation.y = 0.32; // 斜放（和桌边有夹角），屏朝人脸
   const tBody = new THREE.Mesh(
