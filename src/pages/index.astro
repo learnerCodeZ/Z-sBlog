@@ -1,15 +1,28 @@
 ---
 import Base from '../layouts/Base.astro';
 import { getCollection } from 'astro:content';
+import { PROJECTS } from '../data/projects';
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-const recentItems = allPosts.slice(0, 5);
+const recent = [
+  ...allPosts.map((p) => ({
+    kind: p.data.type === 'article' ? '文章' : '随笔',
+    title: p.data.title,
+    date: p.data.date,
+    link: `/blog/${p.id}/`,
+  })),
+  ...PROJECTS.map((p) => ({
+    kind: '项目',
+    title: p.name,
+    date: new Date(p.published),
+    link: import.meta.env.BASE_URL + 'projects#' + p.slug,
+  })),
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const blogItems = allPosts.slice(0, 3);
 const RECENT_SLOTS = 5;
 const BLOG_SLOTS = 3;
-const PROJECT_SLOTS = 3;
 const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i);
 ---
 
@@ -28,16 +41,16 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     <div class="recent" id="recent">
       <div class="track">
         {
-          recentItems.map((item) => (
-            <a class="card" href={`/blog/${item.id}/`}>
-              <span class="kind">{item.data.type === 'article' ? '文章' : '随笔'}</span>
-              <span class="card-title">{item.data.title}</span>
-              <span class="date">{item.data.date.toLocaleDateString('zh-CN')}</span>
+          recent.map((item) => (
+            <a class="card" href={item.link}>
+              <span class="kind">{item.kind}</span>
+              <span class="card-title">{item.title}</span>
+              <span class="date">{item.date.toLocaleDateString('zh-CN')}</span>
             </a>
           ))
         }
         {
-          range(RECENT_SLOTS - recentItems.length).map(() => (
+          range(RECENT_SLOTS - recent.length).map(() => (
             <div class="card placeholder">
               <span class="kind">—</span>
               <span class="card-title">待添加</span>
@@ -80,7 +93,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     </div>
   </section>
 
-  <!-- 项目：carousel + 翻页按钮；3 个位置 -->
+  <!-- 项目：carousel + 翻页按钮（和博客同） -->
   <section class="wrap">
     <div class="section-head">
       <h2 class="section-title"><a href="/projects">项目</a></h2>
@@ -92,7 +105,28 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     <div class="carousel-viewport" data-carousel>
       <div class="carousel-track">
         {
-          range(PROJECT_SLOTS).map(() => (
+          PROJECTS.map((p) => (
+            <a class="card project-card" href={import.meta.env.BASE_URL + 'projects#' + p.slug}>
+              <span class={`kind status-${p.status}`}>
+                {p.status === 'active'
+                  ? '● ACTIVE'
+                  : p.status === 'maintained'
+                    ? '◆ MAINTAINED'
+                    : '○ ARCHIVED'}
+              </span>
+              <span class="card-title">{p.name}</span>
+              <span class="pc-desc">{p.description}</span>
+              <div class="pc-tags">
+                {p.tags.map((t) => (
+                  <span class="pc-tag">{t}</span>
+                ))}
+              </div>
+              <span class="date">{p.date}</span>
+            </a>
+          ))
+        }
+        {
+          range(Math.max(0, 3 - PROJECTS.length)).map(() => (
             <div class="card placeholder">
               <span class="kind">—</span>
               <span class="card-title">待添加</span>
@@ -325,6 +359,86 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     opacity: 1;
     transform: scale(1);
     border-color: var(--color-accent);
+  }
+
+  /* 项目固定卡 */
+  .pc-desc {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 0.3rem;
+  }
+  .project-card .kind.status-active {
+    color: var(--color-accent) !important;
+  }
+  .project-card .kind.status-maintained {
+    color: #7dd3c0 !important;
+  }
+  .project-card .kind.status-archived {
+    color: var(--color-text-muted) !important;
+    opacity: 0.6;
+  }
+  .project-card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 1.6rem;
+    color: var(--color-text);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .project-card:hover {
+    text-decoration: none;
+    border-color: var(--color-accent);
+    transform: translateY(-2px);
+  }
+  .pc-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.7rem;
+  }
+  .pc-name {
+    font-family: Georgia, "PingFang SC", serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  .pc-status {
+    font-size: 0.78rem;
+  }
+  .status-active {
+    color: var(--color-accent);
+  }
+  .status-maintained {
+    color: #7dd3c0;
+  }
+  .status-archived {
+    color: var(--color-text-muted);
+    opacity: 0.6;
+  }
+  .pc-desc {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 0 0 0.9rem;
+  }
+  .pc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.7rem;
+  }
+  .pc-tag {
+    font-size: 0.75rem;
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+  }
+  .pc-date {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
   }
 
   @media (max-width: 700px) {

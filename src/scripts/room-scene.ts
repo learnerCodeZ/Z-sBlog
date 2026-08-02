@@ -107,6 +107,15 @@ export function initRoom(container: HTMLElement): () => void {
   const winMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.6), winMat);
   winMesh.position.set(0.3, 1.7, -2.94);
   scene.add(winMesh);
+
+  // 蜘蛛侠海报（后墙窗左侧）
+  const posterTex = new THREE.TextureLoader().load('/room/photos/SpiderMan.png');
+  const poster = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.4, 0.6),
+    new THREE.MeshStandardMaterial({ map: posterTex, roughness: 0.85 })
+  );
+  poster.position.set(-1.5, 1.8, -2.94);
+  scene.add(poster);
   // 窗帘盒（窗顶横盒，遮挡窗帘轨道）
   box(2.6, 0.15, 0.25, 0x807e7a, [0.3, 2.58, -2.88]);
 
@@ -148,7 +157,7 @@ export function initRoom(container: HTMLElement): () => void {
   box(0.88, 0.66, 0.04, 0x6a6864, [-2.5, 0.4, -0.8]); // 中隔（分2格）
   // 柜内暂空（物品待后续添加）
 
-  // RoboMaster EP（桌下靠窗）—— 履带底盘 + 云台 + 发射器 + 红蓝装甲
+  // RoboMaster EP（桌下靠窗）—— 麦轮底盘 + 机械臂 + 四面装甲 + 云台 + 激光雷达
   const ep = new THREE.Group();
   ep.position.set(0.6, 0, -2.2);
   const addEp = (geo: THREE.BufferGeometry, mat: THREE.Material, x: number, y: number, z: number) => {
@@ -164,8 +173,8 @@ export function initRoom(container: HTMLElement): () => void {
   const epBlue = new THREE.MeshStandardMaterial({ color: 0x2848d0, roughness: 0.5 });
   // 底盘
   addEp(new RoundedBoxGeometry(0.42, 0.12, 0.5, 2, 0.02), epBlack, 0, 0.16, 0);
-  // 4 个麦克纳姆轮（4 角，圆柱横放）
-  const wheelGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 16);
+  // 4 麦轮（圆柱横放 + 斜辊）
+  const wheelGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.06, 12);
   [
     [-0.2, 0.2],
     [0.2, 0.2],
@@ -173,26 +182,33 @@ export function initRoom(container: HTMLElement): () => void {
     [0.2, -0.2],
   ].forEach(([x, z]) => {
     addEp(wheelGeo, epGray, x, 0.08, z);
-    ep.children[ep.children.length - 1].rotation.x = Math.PI / 2;
+    ep.children[ep.children.length - 1].rotation.z = Math.PI / 2;
   });
-  // 装甲条（前红后蓝，RM 阵营色）
+  // 装甲（前红后蓝 + 侧面）
   addEp(new THREE.BoxGeometry(0.44, 0.04, 0.03), epRed, 0, 0.17, 0.26);
   addEp(new THREE.BoxGeometry(0.44, 0.04, 0.03), epBlue, 0, 0.17, -0.26);
-  // 机械臂（底座 + 大臂 + 小臂 + 夹爪）
-  addEp(new THREE.CylinderGeometry(0.06, 0.07, 0.06, 14), epBlack, 0, 0.25, 0); // 底座
-  const arm1 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.2, 0.05), epBlack);
-  arm1.position.set(0, 0.35, 0.04);
-  arm1.rotation.x = -0.4;
+  addEp(new THREE.BoxGeometry(0.03, 0.04, 0.44), epRed, -0.22, 0.17, 0);
+  addEp(new THREE.BoxGeometry(0.03, 0.04, 0.44), epBlue, 0.22, 0.17, 0);
+  // 云台摄像头（车顶前部）
+  addEp(new THREE.CylinderGeometry(0.035, 0.04, 0.04, 12), epBlack, 0, 0.24, 0.16);
+  addEp(new THREE.SphereGeometry(0.022, 12, 12), epGray, 0, 0.27, 0.18);
+  // 激光雷达（车顶后部）
+  addEp(new THREE.CylinderGeometry(0.025, 0.03, 0.06, 10), epBlack, 0, 0.25, -0.16);
+  // 机械臂（朝车头 +z 方向，底座偏后，臂向前伸）
+  addEp(new THREE.CylinderGeometry(0.06, 0.07, 0.05, 14), epBlack, 0, 0.24, -0.08); // 底座
+  const arm1 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.22, 0.05), epBlack);
+  arm1.position.set(0, 0.36, -0.05);
+  arm1.rotation.x = -0.3;
   arm1.castShadow = true;
   ep.add(arm1);
-  const arm2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.15, 0.05), epBlack);
-  arm2.position.set(0, 0.44, 0.12);
+  const arm2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.16, 0.05), epBlack);
+  arm2.position.set(0, 0.46, 0.05);
   arm2.rotation.x = -1.0;
   arm2.castShadow = true;
   ep.add(arm2);
-  // 末端夹爪
-  addEp(new THREE.BoxGeometry(0.015, 0.05, 0.03), epGray, -0.025, 0.49, 0.18);
-  addEp(new THREE.BoxGeometry(0.015, 0.05, 0.03), epGray, 0.025, 0.49, 0.18);
+  // 末端夹爪（前下，朝车头）
+  addEp(new THREE.BoxGeometry(0.015, 0.05, 0.03), epGray, -0.025, 0.42, 0.15);
+  addEp(new THREE.BoxGeometry(0.015, 0.05, 0.03), epGray, 0.025, 0.42, 0.15);
   scene.add(ep);
   // 4 扇柜门（可点击向外打开；前2门/后2门各共享一格）
   const doors: { group: THREE.Group; angle: number; target: number }[] = [];
@@ -345,12 +361,19 @@ export function initRoom(container: HTMLElement): () => void {
     const hoverBoard = raycaster.intersectObject(board).length > 0;
     const hoverCurtain = raycaster.intersectObject(curtain).length > 0;
     const hoverChair = raycaster.intersectObjects(chairParts).length > 0;
+    const hoverEp = raycaster.intersectObject(ep, true).length > 0;
     renderer.domElement.style.cursor =
-      hoverBoard || hoverCurtain || hoverChair ? 'pointer' : 'default';
+      hoverBoard || hoverCurtain || hoverChair || hoverEp ? 'pointer' : 'default';
     boardEdges.visible = hoverBoard;
     const tip = document.getElementById('roomTip');
     if (tip) {
       if (hoverBoard) {
+        tip.textContent = '留言板';
+        tip.style.display = 'block';
+        tip.style.left = `${e.clientX + 14}px`;
+        tip.style.top = `${e.clientY + 14}px`;
+      } else if (hoverEp) {
+        tip.textContent = 'EP小车';
         tip.style.display = 'block';
         tip.style.left = `${e.clientX + 14}px`;
         tip.style.top = `${e.clientY + 14}px`;
@@ -366,6 +389,8 @@ export function initRoom(container: HTMLElement): () => void {
     raycaster.setFromCamera(pointer, camera);
     if (raycaster.intersectObjects(chairParts).length > 0) {
       chairSpin += 0.12; // 点击拨动转椅
+    } else if (raycaster.intersectObject(ep, true).length > 0) {
+      window.location.href = import.meta.env.BASE_URL + 'projects#ep-navigation';
     } else if (raycaster.intersectObjects(doorMeshes).length > 0) {
       const hitDoor = raycaster.intersectObjects(doorMeshes);
       const idx = hitDoor[0].object.userData.doorIndex;

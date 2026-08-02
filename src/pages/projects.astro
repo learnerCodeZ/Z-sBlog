@@ -1,11 +1,107 @@
 ---
 import Base from '../layouts/Base.astro';
+import { PROJECTS } from '../data/projects';
+
+const projects = [...PROJECTS].sort((a, b) => b.published.localeCompare(a.published));
+const statusText = (s: string) =>
+  s === 'active' ? '● ACTIVE' : s === 'maintained' ? '◆ MAINTAINED' : '○ ARCHIVED';
 ---
 
 <Base title="项目">
   <section class="container">
     <h1>项目</h1>
-    <!-- TODO: 项目展柜 — 卡片 + 状态徽章（● ACTIVE / ◆ MAINTAINED / ○ ARCHIVED）。数据放 src/data/projects.ts -->
-    <p class="empty">项目展柜即将到来。</p>
+    <ul class="project-list">
+      {
+        projects.map((p) => (
+          <li id={p.slug}>
+            <div class="pl-left">
+              <div class="pl-title-row">
+                <span class="pl-name">{p.name}</span>
+                <span class={`pl-status status-${p.status}`}>{statusText(p.status)}</span>
+              </div>
+              <span class="pl-desc">{p.description}</span>
+              <span class="pl-tags">{p.tags.join(' · ')}</span>
+              <span class="pl-date">{p.date}</span>
+            </div>
+            <a class="pl-source" href={p.link} target="_blank" rel="noopener">
+              source code →
+            </a>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 </Base>
+
+<style>
+  .project-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .project-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    border-bottom: 1px solid var(--color-border);
+    padding: 1.5rem 0;
+    scroll-margin-top: 6rem;
+  }
+  .pl-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+  .pl-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+  }
+  .pl-name {
+    font-family: Georgia, 'PingFang SC', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  .pl-status {
+    font-size: 0.78rem;
+  }
+  .status-active {
+    color: var(--color-accent);
+  }
+  .status-maintained {
+    color: #7dd3c0;
+  }
+  .status-archived {
+    color: var(--color-text-muted);
+    opacity: 0.6;
+  }
+  .pl-desc {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .pl-tags {
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+  }
+  .pl-date {
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+  }
+  .pl-source {
+    flex-shrink: 0;
+    color: var(--color-accent);
+    font-size: 0.9rem;
+    white-space: nowrap;
+  }
+  .pl-source:hover {
+    text-decoration: underline;
+  }
+  @media (max-width: 600px) {
+    .project-list li {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
