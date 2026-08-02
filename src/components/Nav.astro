@@ -15,7 +15,7 @@ const path = Astro.url.pathname;
       {
         NAV_LINKS.map((l) => (
           <a
-            href={l.href}
+            href={`${import.meta.env.BASE_URL}${l.href.slice(1)}`}
             class:list={['nav-link', { active: path.startsWith(l.href) }]}
           >
             {l.label}
