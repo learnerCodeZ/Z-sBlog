@@ -13,7 +13,7 @@ export function initRoom(container: HTMLElement): () => void {
     0.1,
     100
   );
-  camera.position.set(2.8, 2, 3);
+  camera.position.set(3.5, 3.2, 3.5);
 
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
@@ -26,9 +26,10 @@ export function initRoom(container: HTMLElement): () => void {
   controls.maxDistance = 7;
   controls.minPolarAngle = Math.PI / 4;
   controls.maxPolarAngle = Math.PI / 2.1;
-  controls.minAzimuthAngle = -Math.PI / 4;
-  controls.maxAzimuthAngle = Math.PI / 4;
-  controls.target.set(-0.5, 1, -1.8);
+  controls.minAzimuthAngle = -Math.PI / 3;
+  controls.maxAzimuthAngle = Math.PI / 3;
+  controls.target.set(-3, 0, -3);
+  controls.enabled = false; // 先固定视野，调布局期间不让拖
   controls.update();
 
   // 灯光
@@ -63,12 +64,12 @@ export function initRoom(container: HTMLElement): () => void {
   // 房间：2 面墙（奶色）+ 地板
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(7, 7),
-    new THREE.MeshStandardMaterial({ color: 0x4a4036 })
+    new THREE.MeshStandardMaterial({ color: 0xede4d3 })
   );
   floor.rotation.x = -Math.PI / 2;
   scene.add(floor);
-  box(7, 3, 0.1, 0xede4d3, [0, 1.5, -3]); // 后墙
-  box(0.1, 3, 7, 0xe6dccc, [-3, 1.5, 0]); // 左墙
+  box(7, 3, 0.1, 0xfbf8f1, [0, 1.5, -3]); // 后墙（更浅）
+  box(0.1, 3, 7, 0xfbf8f1, [-3, 1.5, 0]); // 左墙（更浅）
 
   // 窗：后墙，大窗，上移（在桌子正上方）
   const winMat = new THREE.MeshStandardMaterial({
@@ -80,26 +81,24 @@ export function initRoom(container: HTMLElement): () => void {
   winMesh.position.set(0.3, 1.9, -2.94);
   scene.add(winMesh);
 
-  // 地毯（桌前）
-  const rug = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.0, 2.0),
-    new THREE.MeshStandardMaterial({ color: 0x6b5a55 })
+  // 长桌：贴后墙，左端延伸到左墙角（无腿，左段下方是柜子）
+  box(4.4, 0.05, 0.9, 0x6b4f3a, [-0.7, 0.75, -2.5]); // 后墙段桌面
+  // L 型：左墙段桌面（搭在柜子上）
+  box(0.9, 0.05, 2.5, 0x6b4f3a, [-2.5, 0.75, -0.8]);
+  // 左墙段下方：有门柜子（地面到桌面，支撑桌面）
+  box(0.9, 0.7, 2.5, 0x6b4f3a, [-2.5, 0.4, -0.8]); // 柜体
+  // 4 扇柜门（两两一对）
+  [-1.74, -1.11, -0.49, 0.14].forEach((z) =>
+    box(0.04, 0.62, 0.58, 0x5a4030, [-2.04, 0.4, z])
   );
-  rug.rotation.x = -Math.PI / 2;
-  rug.position.set(0, 0.02, -1.2);
-  scene.add(rug);
-
-  // 长桌：贴后墙，左端延伸到左墙角
-  // 桌面 x: -2.9（贴左墙）到 1.5；z: -2.95（贴后墙）到 -2.05
-  box(4.4, 0.05, 0.9, 0x6b4f3a, [-0.7, 0.75, -2.5]); // 桌面
-  // 桌腿（前缘，z=-2.05）
-  [-2.6, -1.3, 0, 1.3].forEach((x) =>
-    box(0.06, 0.75, 0.06, 0x4a3528, [x, 0.37, -2.05])
-  );
-  // L 型：左墙段（沿左墙向前延伸，拐弯）
-  box(0.9, 0.05, 2.5, 0x6b4f3a, [-2.5, 0.75, -0.8]); // 左墙段桌面
-  [-1.5, 0].forEach((z) =>
-    box(0.06, 0.75, 0.06, 0x4a3528, [-2.05, 0.37, z])
+  // 对内细缝（每对的两门之间）
+  box(0.04, 0.62, 0.02, 0x1a1410, [-2.04, 0.4, -1.42]);
+  box(0.04, 0.62, 0.02, 0x1a1410, [-2.04, 0.4, -0.18]);
+  // 对间竖向分隔（两对的分界，更宽更明显）
+  box(0.04, 0.7, 0.05, 0x4a3528, [-2.03, 0.4, -0.8]);
+  // 每门一个把手
+  [-1.56, -0.94, -0.31, 0.32].forEach((z) =>
+    box(0.05, 0.08, 0.05, 0xe8b166, [-2.02, 0.45, z])
   );
 
   // 笔记本电脑（桌上，偏左）
@@ -126,6 +125,29 @@ export function initRoom(container: HTMLElement): () => void {
   laptopDisplay.position.set(0, 0.28, 0.018);
   laptop.add(laptopDisplay);
   scene.add(laptop);
+
+  // 平板（笔记本左侧，副屏，斜立对着人物）
+  const tablet = new THREE.Group();
+  tablet.position.set(-1.6, 0.79, -2.37);
+  tablet.rotation.x = -0.35; // 后倾
+  tablet.rotation.y = 0.32; // 斜放（和桌边有夹角），屏朝人脸
+  const tBody = new THREE.Mesh(
+    new THREE.BoxGeometry(0.59, 0.37, 0.02),
+    new THREE.MeshStandardMaterial({ color: 0x1a1a1e })
+  );
+  tBody.position.set(0, 0.185, 0);
+  tablet.add(tBody);
+  const tScreen = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.54, 0.32),
+    new THREE.MeshStandardMaterial({
+      color: 0x7dd3c0,
+      emissive: 0x7dd3c0,
+      emissiveIntensity: 0.6,
+    })
+  );
+  tScreen.position.set(0, 0.185, 0.012);
+  tablet.add(tScreen);
+  scene.add(tablet);
 
   // 椅子 + 男孩（桌前，面朝 -z 看屏幕）
   box(0.5, 0.05, 0.5, 0x2a2a2e, [-0.8, 0.45, -1.5]); // 座椅
