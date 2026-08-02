@@ -4,6 +4,9 @@ import Base from '../layouts/Base.astro';
 
 <Base title="房间">
   <div class="room-wrap" id="room"></div>
+
+  <!-- hover 提示 -->
+  <div class="room-tip" id="roomTip">留言板</div>
 </Base>
 
 <script>
@@ -20,5 +23,18 @@ import Base from '../layouts/Base.astro';
   }
   :global(.room-wrap canvas) {
     display: block;
+  }
+
+  .room-tip {
+    display: none;
+    position: fixed;
+    pointer-events: none;
+    background: var(--color-text);
+    color: var(--color-bg);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.55rem;
+    border-radius: 5px;
+    z-index: 50;
+    white-space: nowrap;
   }
 </style>

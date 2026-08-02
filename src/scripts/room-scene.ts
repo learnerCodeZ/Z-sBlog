@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
 /**
  * 3D 房间 —— 纯 Three.js（命令式）。
@@ -18,6 +19,8 @@ export function initRoom(container: HTMLElement): () => void {
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   container.appendChild(renderer.domElement);
 
   const controls = new OrbitControls(camera, renderer.domElement);
@@ -26,10 +29,9 @@ export function initRoom(container: HTMLElement): () => void {
   controls.maxDistance = 7;
   controls.minPolarAngle = Math.PI / 4;
   controls.maxPolarAngle = Math.PI / 2.1;
-  controls.minAzimuthAngle = -Math.PI / 3;
+  controls.minAzimuthAngle = Math.PI / 6;
   controls.maxAzimuthAngle = Math.PI / 3;
   controls.target.set(-3, 0, -3);
-  controls.enabled = false; // 先固定视野，调布局期间不让拖
   controls.update();
 
   // 灯光
@@ -37,6 +39,16 @@ export function initRoom(container: HTMLElement): () => void {
   scene.add(ambient);
   const dirLight = new THREE.DirectionalLight(0xfff2dd, 1.3);
   dirLight.position.set(4, 6, 3);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.width = 1024;
+  dirLight.shadow.mapSize.height = 1024;
+  dirLight.shadow.camera.near = 0.5;
+  dirLight.shadow.camera.far = 30;
+  dirLight.shadow.camera.left = -5;
+  dirLight.shadow.camera.right = 5;
+  dirLight.shadow.camera.top = 5;
+  dirLight.shadow.camera.bottom = -5;
+  dirLight.shadow.bias = -0.0005;
   scene.add(dirLight);
   const screenLight = new THREE.PointLight(0x7dd3c0, 1.3, 3.5);
   screenLight.position.set(-0.8, 1.1, -2.0);
@@ -53,10 +65,12 @@ export function initRoom(container: HTMLElement): () => void {
     pos: [number, number, number]
   ) => {
     const m = new THREE.Mesh(
-      new THREE.BoxGeometry(w, h, d),
+      new RoundedBoxGeometry(w, h, d, 4, 0.02),
       new THREE.MeshStandardMaterial({ color })
     );
     m.position.set(...pos);
+    m.castShadow = true;
+    m.receiveShadow = true;
     scene.add(m);
     return m;
   };
@@ -67,6 +81,7 @@ export function initRoom(container: HTMLElement): () => void {
     new THREE.MeshStandardMaterial({ color: 0xede4d3 })
   );
   floor.rotation.x = -Math.PI / 2;
+  floor.receiveShadow = true;
   scene.add(floor);
   // 地毯（覆盖桌区 + 左右超出桌子）
   const rug = new THREE.Mesh(
@@ -91,25 +106,97 @@ export function initRoom(container: HTMLElement): () => void {
   // 窗帘盒（窗顶横盒，遮挡窗帘轨道）
   box(2.6, 0.15, 0.25, 0x807e7a, [0.3, 2.58, -2.88]);
 
+  // 窗帘（单侧右侧，点击拉上/拉开）
+  const curtainGroup = new THREE.Group();
+  curtainGroup.position.set(1.5, 1.7, -2.9); // 锚点在窗右边缘
+  const curtainGeo = new THREE.PlaneGeometry(2.4, 1.8, 20, 1);
+  const cPos = curtainGeo.attributes.position;
+  for (let i = 0; i < cPos.count; i++) {
+    const x = cPos.getX(i);
+    cPos.setZ(i, Math.sin(x * 8) * 0.04); // 竖向褶皱（前后波动）
+  }
+  curtainGeo.computeVertexNormals();
+  const curtain = new THREE.Mesh(
+    curtainGeo,
+    new THREE.MeshStandardMaterial({
+      color: 0xe8e0d4,
+      roughness: 1,
+      side: THREE.DoubleSide,
+    })
+  );
+  curtain.position.x = -1.2; // 布面中心左偏，右边缘对齐锚点
+  curtain.castShadow = true;
+  curtainGroup.add(curtain);
+  curtainGroup.scale.x = 0.12; // 初始：拉开（收在右侧）
+  scene.add(curtainGroup);
+
   // 长桌：贴后墙，左端延伸到左墙角（无腿，左段下方是柜子）
   box(4.4, 0.05, 0.9, 0x807e7a, [-0.7, 0.75, -2.5]); // 后墙段桌面
   // L 型：左墙段桌面（搭在柜子上）
   box(0.9, 0.05, 2.5, 0x807e7a, [-2.5, 0.75, -0.8]);
   // 左墙段下方：有门柜子（地面到桌面，支撑桌面）
-  box(0.9, 0.7, 2.5, 0x807e7a, [-2.5, 0.4, -0.8]); // 柜体
-  // 4 扇柜门（两两一对）
-  [-1.74, -1.11, -0.49, 0.14].forEach((z) =>
-    box(0.04, 0.62, 0.58, 0x6a6864, [-2.04, 0.4, z])
-  );
-  // 对内细缝（每对的两门之间）
-  box(0.04, 0.62, 0.02, 0x3a3834, [-2.04, 0.4, -1.42]);
-  box(0.04, 0.62, 0.02, 0x3a3834, [-2.04, 0.4, -0.18]);
-  // 对间竖向分隔（两对的分界，更宽更明显）
+  // 柜体（中空框架：顶/底/背/侧，开门可见内部）
+  box(0.9, 0.04, 2.5, 0x807e7a, [-2.5, 0.73, -0.8]); // 顶板
+  box(0.9, 0.04, 2.5, 0x807e7a, [-2.5, 0.07, -0.8]); // 底板
+  box(0.05, 0.7, 2.5, 0x6a6864, [-2.9, 0.4, -0.8]); // 背板（贴左墙，略深）
+  box(0.9, 0.7, 0.04, 0x807e7a, [-2.5, 0.4, -2.03]); // 左侧板
+  box(0.9, 0.7, 0.04, 0x807e7a, [-2.5, 0.4, 0.43]); // 右侧板
+  box(0.88, 0.66, 0.04, 0x6a6864, [-2.5, 0.4, -0.8]); // 中隔（分2格）
+  // 柜内物品：格1（左格）几本书 + 收纳盒
+  [
+    [-1.6, 0x4a6680],
+    [-1.42, 0xa04040],
+    [-1.24, 0xc0a040],
+  ].forEach(([bz, c]) => {
+    box(0.04, 0.42, 0.16, c as number, [-2.72, 0.31, bz as number]); // 书（书脊朝前）
+  });
+  box(0.5, 0.18, 0.36, 0x707074, [-2.66, 0.16, -1.0]); // 收纳盒
+  // 格2（右格）书 + 木盒
+  [
+    [-0.42, 0x508050],
+    [-0.24, 0xc06030],
+  ].forEach(([bz, c]) => {
+    box(0.04, 0.4, 0.16, c as number, [-2.72, 0.3, bz as number]);
+  });
+  box(0.3, 0.24, 0.3, 0x80604a, [-2.7, 0.19, 0.08]); // 木盒
+  // 4 扇柜门（可点击向外打开；前2门/后2门各共享一格）
+  const doors: { group: THREE.Group; angle: number; target: number }[] = [];
+  const doorMeshes: THREE.Mesh[] = [];
+  // [铰链z, 门中心z, 开角（正=向右外开，负=向左外开）]
+  const doorDefs: [number, number, number][] = [
+    [-2.03, -1.74, Math.PI / 2], // 门1 向外开 90°
+    [-0.82, -1.11, -Math.PI / 2], // 门2 向外开 90°
+    [-0.8, -0.49, Math.PI / 2], // 门3 向外开 90°
+    [0.43, 0.14, -Math.PI / 2], // 门4 向外开 90°
+  ];
+  doorDefs.forEach(([hingeZ, cz, openAngle], i) => {
+    const g = new THREE.Group();
+    g.position.set(-2.04, 0.4, hingeZ);
+    const door = new THREE.Mesh(
+      new RoundedBoxGeometry(0.04, 0.62, 0.58, 2, 0.015),
+      new THREE.MeshStandardMaterial({ color: 0x6a6864 })
+    );
+    door.position.z = cz - hingeZ;
+    door.castShadow = true;
+    door.receiveShadow = true;
+    g.add(door);
+    const handle = new THREE.Mesh(
+      new THREE.SphereGeometry(0.03, 12, 12),
+      new THREE.MeshStandardMaterial({
+        color: 0xe8b166,
+        metalness: 0.6,
+        roughness: 0.3,
+      })
+    );
+    handle.position.set(0.02, -0.22, cz - hingeZ > 0 ? 0.45 : -0.45);
+    g.add(handle);
+    scene.add(g);
+    doors.push({ group: g, angle: openAngle, target: 0 });
+    door.userData.doorIndex = i;
+    doorMeshes.push(door);
+  });
+  // 对间竖向分隔（固定，两格分界）
   box(0.04, 0.7, 0.05, 0x5a5854, [-2.03, 0.4, -0.8]);
-  // 每门一个把手
-  [-1.56, -0.94, -0.31, 0.32].forEach((z) =>
-    box(0.05, 0.08, 0.05, 0xe8b166, [-2.02, 0.45, z])
-  );
 
   // 左墙段上方：镂空格子挂柜（挂在墙面，桌面以上）
   box(0.3, 1.2, 0.04, 0x807e7a, [-2.85, 1.9, -1.68]); // 左侧板
@@ -120,6 +207,122 @@ export function initRoom(container: HTMLElement): () => void {
     box(0.3, 0.03, 1.6, 0x5a5854, [-2.85, y, -0.9])
   ); // 搁板（分 3 层）
   box(0.3, 1.2, 0.03, 0x5a5854, [-2.85, 1.9, -0.9]); // 竖分隔（每层分 2）
+
+  // 留言板（挂柜左侧墙上，点击进留言页）
+  const board = new THREE.Mesh(
+    new THREE.BoxGeometry(0.04, 0.55, 0.75),
+    new THREE.MeshStandardMaterial({ color: 0x9a7a5a, roughness: 0.92 })
+  );
+  board.position.set(-2.87, 1.9, 0.5);
+  board.castShadow = true;
+  board.receiveShadow = true;
+  scene.add(board);
+  // 留言板边缘线（hover 时高亮显示，面板不变色）
+  const boardEdges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(board.geometry, 30),
+    new THREE.LineBasicMaterial({ color: 0xe8b166 })
+  );
+  boardEdges.position.copy(board.position);
+  boardEdges.visible = false;
+  scene.add(boardEdges);
+  // 便签纸（圆角 + 图钉 + 微倾，更自然）
+  [
+    [-2.84, 2.02, 0.7, 0xe8d068, 0.12],
+    [-2.84, 1.78, 0.3, 0xf0a8a8, -0.18],
+  ].forEach(([x, y, z, c, rot]) => {
+    const note = new THREE.Mesh(
+      new RoundedBoxGeometry(0.01, 0.18, 0.18, 2, 0.012),
+      new THREE.MeshStandardMaterial({ color: c as number, roughness: 0.85 })
+    );
+    note.position.set(x as number, y as number, z as number);
+    note.rotation.x = rot as number;
+    note.castShadow = true;
+    note.receiveShadow = true;
+    scene.add(note);
+    const pin = new THREE.Mesh(
+      new THREE.SphereGeometry(0.016, 12, 12),
+      new THREE.MeshStandardMaterial({
+        color: 0xd04040,
+        metalness: 0.6,
+        roughness: 0.3,
+      })
+    );
+    pin.position.set(
+      (x as number) - 0.008,
+      (y as number) + 0.06,
+      z as number
+    );
+    scene.add(pin);
+  });
+
+  // 点击留言板 → 跳转留言页（Raycaster 检测）
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  renderer.domElement.style.cursor = 'default';
+  let draggingCurtain = false;
+  let lastCurtainX = 0;
+  const moveCurtain = (clientX: number) => {
+    const dx = clientX - lastCurtainX;
+    lastCurtainX = clientX;
+    curtainGroup.scale.x = Math.max(
+      0.12,
+      Math.min(1, curtainGroup.scale.x - dx * 0.005)
+    );
+  };
+  renderer.domElement.addEventListener('pointerdown', (e) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    if (raycaster.intersectObject(curtain).length > 0) {
+      draggingCurtain = true;
+      controls.enabled = false;
+      lastCurtainX = e.clientX;
+    }
+  });
+  window.addEventListener('pointerup', () => {
+    draggingCurtain = false;
+    controls.enabled = true; // 恢复视角旋转
+  });
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    if (draggingCurtain) {
+      moveCurtain(e.clientX);
+      return;
+    }
+    const hoverBoard = raycaster.intersectObject(board).length > 0;
+    const hoverCurtain = raycaster.intersectObject(curtain).length > 0;
+    renderer.domElement.style.cursor =
+      hoverBoard || hoverCurtain ? 'pointer' : 'default';
+    boardEdges.visible = hoverBoard;
+    const tip = document.getElementById('roomTip');
+    if (tip) {
+      if (hoverBoard) {
+        tip.style.display = 'block';
+        tip.style.left = `${e.clientX + 14}px`;
+        tip.style.top = `${e.clientY + 14}px`;
+      } else {
+        tip.style.display = 'none';
+      }
+    }
+  });
+  renderer.domElement.addEventListener('click', (e) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(pointer, camera);
+    const hitDoor = raycaster.intersectObjects(doorMeshes);
+    if (hitDoor.length > 0) {
+      const idx = hitDoor[0].object.userData.doorIndex;
+      const d = doors[idx];
+      d.target = d.target !== 0 ? 0 : d.angle; // 点击开关门
+    } else if (raycaster.intersectObject(board).length > 0) {
+      window.location.href = import.meta.env.BASE_URL + 'guestbook';
+    }
+  });
 
   // 笔记本电脑（桌上，偏左）
   box(0.9, 0.04, 0.6, 0x2a2a2e, [-0.8, 0.77, -2.4]); // 底座
@@ -231,6 +434,9 @@ export function initRoom(container: HTMLElement): () => void {
   let raf = 0;
   const animate = () => {
     raf = requestAnimationFrame(animate);
+    for (const d of doors) {
+      d.group.rotation.y += (d.target - d.group.rotation.y) * 0.15;
+    }
     controls.update();
     renderer.render(scene, camera);
   };

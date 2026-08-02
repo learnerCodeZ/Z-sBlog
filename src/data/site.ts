@@ -12,5 +12,4 @@ export const NAV_LINKS = [
   { href: '/blog', label: '博客' },
   { href: '/projects', label: '项目' },
   { href: '/about', label: '关于' },
-  { href: '/guestbook', label: '留言' },
 ];
