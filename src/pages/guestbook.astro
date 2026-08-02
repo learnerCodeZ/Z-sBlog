@@ -13,11 +13,14 @@ import Base from '../layouts/Base.astro';
 <script>
   import { init } from '@waline/client';
   import '@waline/client/waline.css';
-  init({
-    el: '#waline',
-    // TODO: 换成你部署的 Waline 服务端地址（见下方部署步骤）
-    serverURL: 'https://your-waline.vercel.app',
-  });
+  const serverURL = 'https://your-waline.vercel.app'; // TODO: 换成你部署的 Waline 地址
+  const el = document.getElementById('waline');
+  if (serverURL.includes('your-waline')) {
+    el.innerHTML =
+      '<p style="color:var(--color-text-muted)">留言功能即将上线（Waline 后端部署中）。</p>';
+  } else {
+    init({ el: '#waline', serverURL });
+  }
 </script>
 
 <style>
