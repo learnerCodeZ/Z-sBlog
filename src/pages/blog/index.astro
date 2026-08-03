@@ -46,7 +46,7 @@ const readingTime = (body: string) => {
                         ))}
                       </span>
                     )}
-                    <span class="post-read">{readingTime(p.body)} min read</span>
+                    <span class="post-read">{p.data.readTime ?? readingTime(p.body)} min read</span>
                   </div>
                 </div>
               </a>

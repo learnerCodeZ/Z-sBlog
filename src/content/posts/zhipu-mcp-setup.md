@@ -5,6 +5,7 @@ type: article
 tags: ["MCP", "智谱", "Claude Code", "GLM"]
 summary: "智谱为 GLM Coding Plan 用户做了四个专属 MCP——视觉理解、联网搜索、网页读取、开源仓库。记录配置方法与实测体验，并讲清如何用 CCswitch 让一套配置在 Claude Code / Codex / OpenCode 多端通用，以及 bigmodel 与 z.ai 两套 key 的区别。"
 draft: false
+readTime: 3
 ---
 
 > 整理日期：2026-07-08 ｜ 定稿日期：2026-08-03
