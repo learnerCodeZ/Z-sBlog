@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import T from '../components/T.astro';
 import { PROJECTS } from '../data/projects';
 
 const projects = [...PROJECTS].sort((a, b) => b.published.localeCompare(a.published));
@@ -9,7 +10,7 @@ const statusText = (s: string) =>
 
 <Base title="项目">
   <section class="container">
-    <h1>项目</h1>
+    <h1><T k="section.projects" /></h1>
     <ul class="project-list">
       {
         projects.map((p) => (

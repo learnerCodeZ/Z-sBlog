@@ -1,20 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
+import T from '../components/T.astro';
 import { getCollection } from 'astro:content';
 import { PROJECTS } from '../data/projects';
+import { getI18N } from '../data/i18n';
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 const recent = [
   ...allPosts.map((p) => ({
-    kind: p.data.type === 'article' ? '文章' : '随笔',
+    kindZh: getI18N(p.data.type === 'article' ? 'kind.article' : 'kind.essay').zh,
+    kindEn: getI18N(p.data.type === 'article' ? 'kind.article' : 'kind.essay').en,
     title: p.data.title,
     date: p.data.date,
-    link: `/blog/${p.id}/`,
+    link: `${import.meta.env.BASE_URL}/blog/${p.id}/`,
   })),
   ...PROJECTS.map((p) => ({
-    kind: '项目',
+    kindZh: getI18N('kind.project').zh,
+    kindEn: getI18N('kind.project').en,
     title: p.name,
     date: new Date(p.published),
     link: import.meta.env.BASE_URL + '/projects#' + p.slug,
@@ -27,23 +31,24 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
 ---
 
 <Base>
-  <!-- hero（关于我） -->
+  <!-- hero -->
   <section class="wrap hero">
-    <p class="meta">嵌入式 · AI</p>
+    <p class="meta"><T k="hero.tagline" /></p>
     <h1 class="display">learnerCodeZ</h1>
-    <!-- TODO: 一句话介绍自己 -->
-    <p class="intro">在这里记录折腾、复盘，和正在做的事。</p>
+    <p class="intro"><T k="hero.intro" /></p>
   </section>
 
-  <!-- 最近：鼠标进区域滚轮 → 横移；5 个位置 -->
+  <!-- 最近 -->
   <section class="wrap">
-    <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/blog`}>最近</a></h2>
+    <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/blog`}><T k="section.recent" /></a></h2>
     <div class="recent" id="recent">
       <div class="track">
         {
           recent.map((item) => (
             <a class="card" href={item.link}>
-              <span class="kind">{item.kind}</span>
+              <span class="kind">
+                <span data-zh>{item.kindZh}</span><span data-en>{item.kindEn}</span>
+              </span>
               <span class="card-title">{item.title}</span>
               <span class="date">{item.date.toLocaleDateString('zh-CN')}</span>
             </a>
@@ -53,7 +58,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
           range(RECENT_SLOTS - recent.length).map(() => (
             <div class="card placeholder">
               <span class="kind">—</span>
-              <span class="card-title">待添加</span>
+              <span class="card-title"><T k="empty.toAdd" /></span>
             </div>
           ))
         }
@@ -61,13 +66,13 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     </div>
   </section>
 
-  <!-- 博客：carousel + 翻页按钮；3 个位置 -->
+  <!-- 博客 -->
   <section class="wrap">
     <div class="section-head">
-      <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/blog`}>博客</a></h2>
+      <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/blog`}><T k="section.blog" /></a></h2>
       <div class="carousel-controls">
-        <button class="carousel-btn" data-prev aria-label="上一页">←</button>
-        <button class="carousel-btn" data-next aria-label="下一页">→</button>
+        <button class="carousel-btn" data-prev aria-label="Previous">←</button>
+        <button class="carousel-btn" data-next aria-label="Next">→</button>
       </div>
     </div>
     <div class="carousel-viewport" data-carousel>
@@ -75,7 +80,9 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
         {
           blogItems.map((p) => (
             <a class="card" href={`${import.meta.env.BASE_URL}/blog/${p.id}/`}>
-              <span class="kind">{p.data.type === 'article' ? '文章' : '随笔'}</span>
+              <span class="kind">
+                <T k={p.data.type === 'article' ? 'kind.article' : 'kind.essay'} />
+              </span>
               <span class="card-title">{p.data.title}</span>
               <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
             </a>
@@ -85,7 +92,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
           range(BLOG_SLOTS - blogItems.length).map(() => (
             <div class="card placeholder">
               <span class="kind">—</span>
-              <span class="card-title">待添加</span>
+              <span class="card-title"><T k="empty.toAdd" /></span>
             </div>
           ))
         }
@@ -93,13 +100,13 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     </div>
   </section>
 
-  <!-- 项目：carousel + 翻页按钮（和博客同） -->
+  <!-- 项目 -->
   <section class="wrap">
     <div class="section-head">
-      <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/projects`}>项目</a></h2>
+      <h2 class="section-title"><a href={`${import.meta.env.BASE_URL}/projects`}><T k="section.projects" /></a></h2>
       <div class="carousel-controls">
-        <button class="carousel-btn" data-prev aria-label="上一页">←</button>
-        <button class="carousel-btn" data-next aria-label="下一页">→</button>
+        <button class="carousel-btn" data-prev aria-label="Previous">←</button>
+        <button class="carousel-btn" data-next aria-label="Next">→</button>
       </div>
     </div>
     <div class="carousel-viewport" data-carousel>
@@ -129,7 +136,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
           range(Math.max(0, 3 - PROJECTS.length)).map(() => (
             <div class="card placeholder">
               <span class="kind">—</span>
-              <span class="card-title">待添加</span>
+              <span class="card-title"><T k="empty.toAdd" /></span>
             </div>
           ))
         }
@@ -140,7 +147,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
 </Base>
 
 <script>
-  // 效果1：鼠标在“最近”区域内向下滚轮 → 横向滚动；到头/尾放行垂直
   const recent = document.getElementById('recent');
   if (recent) {
     recent.addEventListener(
@@ -159,7 +165,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     );
   }
 
-  // 效果2：center-mode carousel —— 当前卡片居中高亮，其他淡化退后
   document.querySelectorAll('[data-carousel]').forEach((vp) => {
     const root = vp.closest('.wrap');
     const track = vp.querySelector('.carousel-track');
@@ -172,7 +177,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
 
     const layout = () => {
       const cardW = cards[0].getBoundingClientRect().width;
-      const gap = 16; // 1rem
+      const gap = 16;
       const offset = (vp.clientWidth - cardW) / 2;
       track.style.transform = `translateX(${offset - active * (cardW + gap)}px)`;
     };
@@ -237,16 +242,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     font-weight: 600;
     margin: 0 0 1.5rem;
   }
-  .section-title a {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.15s;
-  }
-  .section-title a:hover {
-    color: var(--color-accent);
-  }
 
-  /* 卡片通用 */
   .card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -283,7 +279,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     font-variant-numeric: tabular-nums;
   }
 
-  /* 效果1：最近横滚 */
   .recent {
     overflow-x: auto;
     scroll-behavior: smooth;
@@ -302,7 +297,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     flex: 0 0 320px;
   }
 
-  /* 效果2：carousel */
   .section-head {
     display: flex;
     align-items: center;
@@ -361,7 +355,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     border-color: var(--color-accent);
   }
 
-  /* 项目固定卡 */
   .pc-desc {
     color: var(--color-text-muted);
     font-size: 0.85rem;
@@ -377,68 +370,6 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
   .project-card .kind.status-archived {
     color: var(--color-text-muted) !important;
     opacity: 0.6;
-  }
-  .project-card {
-    width: 100%;
-    max-width: 460px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    padding: 1.6rem;
-    color: var(--color-text);
-    transition: border-color 0.15s, transform 0.15s;
-  }
-  .project-card:hover {
-    text-decoration: none;
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
-  }
-  .pc-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 0.7rem;
-  }
-  .pc-name {
-    font-family: Georgia, "PingFang SC", serif;
-    font-size: 1.2rem;
-    font-weight: 600;
-  }
-  .pc-status {
-    font-size: 0.78rem;
-  }
-  .status-active {
-    color: var(--color-accent);
-  }
-  .status-maintained {
-    color: #7dd3c0;
-  }
-  .status-archived {
-    color: var(--color-text-muted);
-    opacity: 0.6;
-  }
-  .pc-desc {
-    color: var(--color-text-muted);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin: 0 0 0.9rem;
-  }
-  .pc-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.7rem;
-  }
-  .pc-tag {
-    font-size: 0.75rem;
-    color: var(--color-accent);
-    border: 1px solid var(--color-border);
-    padding: 0.1rem 0.5rem;
-    border-radius: 999px;
-  }
-  .pc-date {
-    color: var(--color-text-muted);
-    font-size: 0.8rem;
   }
 
   @media (max-width: 700px) {

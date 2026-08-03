@@ -1,0 +1,7 @@
+---
+import { getI18N } from '../data/i18n';
+interface Props { k: string; }
+const { k } = Astro.props;
+const entry = getI18N(k);
+---
+<span data-zh>{entry.zh}</span><span data-en>{entry.en}</span>

@@ -1,11 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
+import T from '../components/T.astro';
 ---
 
 <Base title="留言">
   <section class="container">
-    <h1>留言</h1>
-    <p class="gb-intro">匿名留言，留下你想说的话。</p>
+    <h1><T k="guestbook.title" /></h1>
+    <p class="gb-intro"><T k="guestbook.intro" /></p>
     <div id="waline"></div>
   </section>
 </Base>
@@ -13,11 +14,13 @@ import Base from '../layouts/Base.astro';
 <script>
   import { init } from '@waline/client';
   import '@waline/client/waline.css';
-  const serverURL = 'https://your-waline.vercel.app'; // TODO: 换成你部署的 Waline 地址
+  const serverURL = 'https://your-waline.vercel.app';
   const el = document.getElementById('waline');
   if (serverURL.includes('your-waline')) {
-    el.innerHTML =
-      '<p style="color:var(--color-text-muted)">留言功能即将上线（Waline 后端部署中）。</p>';
+    const isEn = document.documentElement.lang === 'en';
+    el.innerHTML = isEn
+      ? '<p style="color:var(--color-text-muted)">Comments coming soon (Waline backend deploying).</p>'
+      : '<p style="color:var(--color-text-muted)">留言功能即将上线（Waline 后端部署中）。</p>';
   } else {
     init({ el: '#waline', serverURL });
   }

@@ -88,6 +88,17 @@ a:hover {
   background: var(--color-accent-soft);
 }
 
+/* i18n：默认中文，html[lang="en"] 切英文 */
+[data-en] {
+  display: none;
+}
+html[lang='en'] [data-zh] {
+  display: none;
+}
+html[lang='en'] [data-en] {
+  display: inline;
+}
+
 footer {
   border-top: 1px solid var(--color-border);
   margin-top: 2rem;

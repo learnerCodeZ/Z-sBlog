@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import T from '../../components/T.astro';
 import { getCollection } from 'astro:content';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
@@ -9,22 +10,24 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
 
 <Base title="博客">
   <section class="container">
-    <h1>博客</h1>
+    <h1><T k="section.blog" /></h1>
     <div class="tabs">
-      <button class="tab active" data-filter="all">全部</button>
-      <button class="tab" data-filter="article">文章</button>
-      <button class="tab" data-filter="essay">随笔</button>
+      <button class="tab active" data-filter="all"><T k="filter.all" /></button>
+      <button class="tab" data-filter="article"><T k="filter.article" /></button>
+      <button class="tab" data-filter="essay"><T k="filter.essay" /></button>
     </div>
     {
       posts.length === 0 ? (
-        <p class="empty">还没有内容。</p>
+        <p class="empty"><T k="empty.noContent" /></p>
       ) : (
         <ul class="timeline">
           {posts.map((p) => (
             <li data-type={p.data.type}>
               <a href={`${import.meta.env.BASE_URL}/blog/${p.id}/`}>
                 <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
-                <span class="kind">{p.data.type === 'article' ? '文章' : '随笔'}</span>
+                <span class="kind">
+                  <T k={p.data.type === 'article' ? 'kind.article' : 'kind.essay'} />
+                </span>
                 <span class="title">{p.data.title}</span>
               </a>
             </li>

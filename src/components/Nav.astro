@@ -1,5 +1,6 @@
 ---
 import { SITE, NAV_LINKS } from '../data/site';
+import T from './T.astro';
 import ThemeToggle from './ThemeToggle.astro';
 import LangToggle from './LangToggle.astro';
 import GitHubIcon from './icons/GitHub.astro';
@@ -18,7 +19,7 @@ const path = Astro.url.pathname;
             href={`${import.meta.env.BASE_URL}${l.href}`}
             class:list={['nav-link', { active: path.startsWith(l.href) }]}
           >
-            {l.label}
+            <T k={`nav.${l.href.slice(1)}`} />
           </a>
         ))
       }

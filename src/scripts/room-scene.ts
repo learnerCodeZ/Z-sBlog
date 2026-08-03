@@ -368,12 +368,12 @@ export function initRoom(container: HTMLElement): () => void {
     const tip = document.getElementById('roomTip');
     if (tip) {
       if (hoverBoard) {
-        tip.textContent = '留言板';
+        tip.textContent = document.documentElement.lang === 'en' ? 'Message Board' : '留言板';
         tip.style.display = 'block';
         tip.style.left = `${e.clientX + 14}px`;
         tip.style.top = `${e.clientY + 14}px`;
       } else if (hoverEp) {
-        tip.textContent = 'EP小车';
+        tip.textContent = document.documentElement.lang === 'en' ? 'EP Robot' : 'EP小车';
         tip.style.display = 'block';
         tip.style.left = `${e.clientX + 14}px`;
         tip.style.top = `${e.clientY + 14}px`;

@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import T from '../../components/T.astro';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
@@ -23,7 +24,7 @@ const { title, date, type, tags, summary } = post.data;
 
 <Base title={title} description={summary}>
   <article class="container article">
-    <p class="kind">{type === 'article' ? '文章' : '随笔'}</p>
+    <p class="kind"><T k={type === 'article' ? 'kind.article' : 'kind.essay'} /></p>
     <h1>{title}</h1>
     <p class="meta">
       <time datetime={date.toISOString()}>{date.toLocaleDateString('zh-CN')}</time>
