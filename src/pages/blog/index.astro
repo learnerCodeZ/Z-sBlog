@@ -6,6 +6,11 @@ import { getCollection } from 'astro:content';
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
+
+const readingTime = (body: string) => {
+  const text = body.replace(/[#*`>\-\[\]\(\)!|~_]/g, '').replace(/\s+/g, '');
+  return Math.max(1, Math.ceil(text.length / 400));
+};
 ---
 
 <Base title="博客">
@@ -20,15 +25,30 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
       posts.length === 0 ? (
         <p class="empty"><T k="empty.noContent" /></p>
       ) : (
-        <ul class="timeline">
+        <ul class="post-list">
           {posts.map((p) => (
             <li data-type={p.data.type}>
-              <a href={`${import.meta.env.BASE_URL}/blog/${p.id}/`}>
-                <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
-                <span class="kind">
-                  <T k={p.data.type === 'article' ? 'kind.article' : 'kind.essay'} />
-                </span>
-                <span class="title">{p.data.title}</span>
+              <a href={`${import.meta.env.BASE_URL}/blog/${p.id}/`} class="post-item">
+                <div class="post-left">
+                  <span class="post-date">{p.data.date.toLocaleDateString('zh-CN')}</span>
+                  <span class="post-kind">
+                    <T k={p.data.type === 'article' ? 'kind.article' : 'kind.essay'} />
+                  </span>
+                </div>
+                <div class="post-body">
+                  <h2 class="post-title">{p.data.title}</h2>
+                  {p.data.summary && <p class="post-summary">{p.data.summary}</p>}
+                  <div class="post-meta">
+                    {p.data.tags.length > 0 && (
+                      <span class="post-tags">
+                        {p.data.tags.map((t) => (
+                          <span class="post-tag">{t}</span>
+                        ))}
+                      </span>
+                    )}
+                    <span class="post-read">{readingTime(p.body)} min read</span>
+                  </div>
+                </div>
               </a>
             </li>
           ))}
@@ -45,7 +65,7 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
       tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
       const filter = tab.getAttribute('data-filter');
-      document.querySelectorAll('.timeline li').forEach((li) => {
+      document.querySelectorAll('.post-list li').forEach((li) => {
         const type = li.getAttribute('data-type');
         li.style.display = filter === 'all' || type === filter ? '' : 'none';
       });
@@ -77,44 +97,96 @@ const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
     color: var(--color-accent);
     border-color: var(--color-accent);
   }
-  .timeline {
+  .post-list {
     list-style: none;
     padding: 0;
     margin: 0;
   }
-  .timeline li {
+  .post-list li {
     border-bottom: 1px solid var(--color-border);
   }
-  .timeline a {
+  .post-item {
     display: flex;
-    gap: 1rem;
-    padding: 1rem 0;
+    gap: 1.5rem;
+    padding: 1.5rem 0;
     color: var(--color-text);
-    align-items: baseline;
-  }
-  .timeline a:hover {
     text-decoration: none;
   }
-  .timeline a:hover .title {
+  .post-item:hover {
+    text-decoration: none;
+  }
+  .post-item:hover .post-title {
     color: var(--color-accent);
   }
-  .date {
-    color: var(--color-text-muted);
-    font-size: 0.85rem;
-    font-variant-numeric: tabular-nums;
+  .post-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
     flex-shrink: 0;
     width: 6rem;
   }
-  .kind {
-    color: var(--color-accent);
-    font-size: 0.8rem;
-    flex-shrink: 0;
-    width: 3rem;
+  .post-date {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
   }
-  .title {
+  .post-kind {
+    color: var(--color-accent);
+    font-size: 0.78rem;
+  }
+  .post-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .post-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0 0 0.4rem;
+    line-height: 1.4;
     transition: color 0.15s;
+  }
+  .post-summary {
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0 0 0.6rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+  }
+  .post-tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .post-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+  }
+  .post-read {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
   }
   .empty {
     color: var(--color-text-muted);
+  }
+  @media (max-width: 600px) {
+    .post-left {
+      flex-direction: row;
+      width: auto;
+      gap: 0.8rem;
+    }
   }
 </style>

@@ -84,6 +84,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
                 <T k={p.data.type === 'article' ? 'kind.article' : 'kind.essay'} />
               </span>
               <span class="card-title">{p.data.title}</span>
+              {p.data.summary && <span class="pc-desc">{p.data.summary}</span>}
               <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
             </a>
           ))
