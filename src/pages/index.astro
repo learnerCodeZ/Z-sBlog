@@ -361,6 +361,20 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     line-height: 1.4;
     margin-top: 0.3rem;
   }
+  .pc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.3rem;
+  }
+  .pc-tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+  }
   .project-card .kind.status-active {
     color: var(--color-accent) !important;
   }
