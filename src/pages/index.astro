@@ -8,18 +8,40 @@ import { getI18N } from '../data/i18n';
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
-const recent = [
+const readingTime = (body: string) =>
+  Math.max(1, Math.ceil(body.replace(/[#*`>\-\[\]\(\)!|~_]/g, '').replace(/\s+/g, '').length / 400));
+
+type RecentItem = {
+  type: 'article' | 'essay' | 'project';
+  kindZh: string;
+  kindEn: string;
+  title: string;
+  summary?: string;
+  tags: string[];
+  date: Date;
+  link: string;
+  readMin?: number;
+};
+
+const recent: RecentItem[] = [
   ...allPosts.map((p) => ({
+    type: p.data.type,
     kindZh: getI18N(p.data.type === 'article' ? 'kind.article' : 'kind.essay').zh,
     kindEn: getI18N(p.data.type === 'article' ? 'kind.article' : 'kind.essay').en,
     title: p.data.title,
+    summary: p.data.summary,
+    tags: p.data.tags,
     date: p.data.date,
     link: `${import.meta.env.BASE_URL}/blog/${p.id}/`,
+    readMin: p.data.readTime ?? readingTime(p.body),
   })),
   ...PROJECTS.map((p) => ({
+    type: 'project' as const,
     kindZh: getI18N('kind.project').zh,
     kindEn: getI18N('kind.project').en,
     title: p.name,
+    summary: p.description,
+    tags: p.tags,
     date: new Date(p.published),
     link: import.meta.env.BASE_URL + '/projects#' + p.slug,
   })),
@@ -44,19 +66,34 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     <div class="recent" id="recent">
       <div class="track">
         {
-          recent.map((item) => (
-            <a class="card" href={item.link}>
+          recent.map((item, i) => (
+            <a class={`card recent-card type-${item.type}`} href={item.link}>
+              <span class="recent-index">{String(i + 1).padStart(2, '0')}</span>
               <span class="kind">
                 <span data-zh>{item.kindZh}</span><span data-en>{item.kindEn}</span>
               </span>
               <span class="card-title">{item.title}</span>
-              <span class="date">{item.date.toLocaleDateString('zh-CN')}</span>
+              {item.summary && <span class="recent-summary">{item.summary}</span>}
+              <div class="recent-bottom">
+                {item.tags.length > 0 && (
+                  <span class="recent-tags">
+                    {item.tags.slice(0, 3).map((t) => (
+                      <span class="recent-tag">{t}</span>
+                    ))}
+                  </span>
+                )}
+                <span class="recent-meta">
+                  {item.date.toLocaleDateString('zh-CN')}
+                  {item.readMin && <span> · {item.readMin} min</span>}
+                </span>
+              </div>
             </a>
           ))
         }
         {
-          range(RECENT_SLOTS - recent.length).map(() => (
-            <div class="card placeholder">
+          range(RECENT_SLOTS - recent.length).map((_, i) => (
+            <div class="card recent-card placeholder">
+              <span class="recent-index">{String(recent.length + i + 1).padStart(2, '0')}</span>
               <span class="kind">—</span>
               <span class="card-title"><T k="empty.toAdd" /></span>
             </div>
@@ -244,22 +281,22 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     margin: 0 0 1.5rem;
   }
 
+  /* 卡片通用 */
   .card {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: 10px;
-    padding: 2.2rem 1.7rem;
-    min-height: 280px;
+    padding: 1.6rem;
+    min-height: 220px;
     display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 0.5rem;
     color: var(--color-text);
-    transition: border-color 0.15s, transform 0.15s;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
   }
   a.card:hover {
     text-decoration: none;
-    border-color: var(--color-accent);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
   }
   .card.placeholder {
     border-style: dashed;
@@ -268,7 +305,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
   }
   .card .kind {
     color: var(--color-accent);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
   .card-title {
     font-size: 1rem;
@@ -276,10 +313,90 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
   }
   .card .date {
     color: var(--color-text-muted);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-variant-numeric: tabular-nums;
   }
 
+  /* 最近卡片（A + C：信息丰富 + 类型色条 + 编号 + hover 发光）*/
+  .recent-card {
+    position: relative;
+    padding-left: 1.8rem;
+    overflow: hidden;
+  }
+  .recent-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    border-radius: 10px 0 0 10px;
+  }
+  .recent-card.type-article::before { background: var(--color-accent); }
+  .recent-card.type-essay::before { background: #7dd3c0; }
+  .recent-card.type-project::before { background: var(--color-text-muted); }
+
+  .recent-card.type-article:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 24px -8px var(--color-accent);
+  }
+  .recent-card.type-essay:hover {
+    border-color: #7dd3c0;
+    box-shadow: 0 0 24px -8px #7dd3c0;
+  }
+  .recent-card.type-project:hover {
+    border-color: var(--color-text-muted);
+    box-shadow: 0 0 24px -8px var(--color-text-muted);
+  }
+
+  .recent-index {
+    position: absolute;
+    top: 0.8rem;
+    right: 1rem;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    opacity: 0.12;
+    font-family: Georgia, serif;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .recent-summary {
+    color: var(--color-text-muted);
+    font-size: 0.82rem;
+    line-height: 1.5;
+    margin: 0.2rem 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .recent-bottom {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-top: auto;
+  }
+  .recent-tags {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+  .recent-tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    color: var(--color-accent);
+    border: 1px solid var(--color-border);
+    padding: 0.08rem 0.4rem;
+    border-radius: 999px;
+  }
+  .recent-meta {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 最近横滚 */
   .recent {
     overflow-x: auto;
     scroll-behavior: smooth;
@@ -294,10 +411,11 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     gap: 1rem;
     padding-bottom: 0.5rem;
   }
-  .recent .track .card {
-    flex: 0 0 320px;
+  .recent .track .recent-card {
+    flex: 0 0 300px;
   }
 
+  /* 博客 carousel */
   .section-head {
     display: flex;
     align-items: center;
@@ -361,6 +479,10 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     font-size: 0.85rem;
     line-height: 1.4;
     margin-top: 0.3rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
   .pc-tags {
     display: flex;
@@ -394,8 +516,8 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     .hero {
       padding-top: 3.5rem;
     }
-    .recent .track .card {
-      flex: 0 0 220px;
+    .recent .track .recent-card {
+      flex: 0 0 260px;
     }
     .carousel-track .card {
       flex: 0 0 calc((100% - 1rem) / 2);
