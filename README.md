@@ -10,7 +10,7 @@
 - **两类文字**：**文章**（技术复盘，带标签 / 阅读时长）与 **随笔**（散文 / 反思）。
 - **项目展柜**：带状态徽章（进行中 / 维护中 / 归档）。
 - **匿名留言**：访客无需登录即可留言。
-- **3D 子页面**：一个独立的互动小空间，独立路由、懒加载，绝不拖慢主站。
+- **像素房间**：一个像素 RPG 风格的互动小空间（`/room`），独立路由，绝不拖慢主站。
 - **关于我**：含我感兴趣的方向。
 
 ## 技术栈
@@ -18,8 +18,8 @@
 | 用途 | 选型 | 说明 |
 |---|---|---|
 | 站点框架 | **Astro** | 静态优先、默认零 JS；性能约束下的首选 |
-| UI 交互 | React（Astro islands） | 仅在需要交互的组件按需 hydrate |
-| 3D | React Three Fiber + drei | 独立路由懒加载 |
+| 房间 | 纯 Canvas 2D 像素画（`room-pixel.ts`） | 独立路由，不进主站 bundle |
+| 像素字体 | Press Start 2P（OFL） | logo / 编号 / 英文标签 |
 | 动效 | framer motion（克制使用） | 仅 hero / 卡片等点睛处 |
 | 样式 | 手写 CSS + CSS 变量 | 轻量、零依赖、亮暗用变量切换 |
 | 内容模型 | Astro content collections | 文章 / 随笔 双集合 |
@@ -27,11 +27,11 @@
 | 搜索 | Pagefind | 纯静态、构建期生成 |
 | 部署 | GitHub Pages ✅ | https://learnerCodeZ.github.io/Z-sBlog |
 
-> 视觉调性尚未最终拍板，但不影响以上结构选型。详见 [`develplan/design.md`](./develplan/design.md)。
+> 视觉调性已定：像素 RPG 外壳 + 可读正文。详见 [`develplan/design.md`](./develplan/design.md) 与 [`AGENTS.md`](./AGENTS.md)「像素风格指南」。
 
 ## 快速开始
 
-> 项目尚未初始化。初始化后命令如下（占位）：
+> 已部署上线（GitHub Pages）。本地命令：
 
 ```bash
 npm install
@@ -45,10 +45,9 @@ npm run preview    # 预览构建产物
 ```
 Z'sBlog/
 ├── src/
-│   ├── pages/            # 路由：首页 / 文章 / 随笔 / 项目 / 关于 / 留言 / 3D房间
-│   ├── content/          # content collections
-│   │   ├── articles/     # 文章（技术）
-│   │   └── essays/       # 随笔（散文）
+│   ├── pages/            # 路由：首页 / 博客 / 项目 / 关于 / 留言 / 像素房间
+│   ├── content/
+│   │   └── posts/        # 文章 + 随笔（frontmatter type 区分）
 │   ├── components/       # 组件
 │   ├── layouts/          # 布局
 │   └── styles/           # 全局样式
