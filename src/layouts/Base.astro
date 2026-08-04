@@ -10,8 +10,11 @@ interface Props {
 
 const { title, description = '一个在嵌入式与 AI 交叉点上折腾的人的博客' } =
   Astro.props;
-const siteName = 'learnerCode.';
+const siteName = 'learnerCodeZ.';
 const isRoom = Astro.url.pathname.replace(/\/$/, '').endsWith('room');
+const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-sBlog'
+const homeHref = _base + '/';
+const roomHref = _base + '/room';
 
 // 最近更新 = git 最后提交日期（构建时注入，静态）
 let lastUpdated = '';
@@ -55,11 +58,16 @@ try {
         <span class="footer-meta">Established late July 2026 · Last updated {lastUpdated}</span>
       </div>
     </footer>
-    <a class="room-float" href={isRoom ? import.meta.env.BASE_URL + '/' : import.meta.env.BASE_URL + '/room'} aria-label={isRoom ? '返回主页' : '房间'}>
-      <svg width="26" height="32" viewBox="0 0 26 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <rect x="4" y="2" width="18" height="28" rx="2"></rect>
-        <line x1="4" y1="2" x2="4" y2="30"></line>
-        <circle cx="18" cy="16" r="1.4" fill="currentColor" stroke="none"></circle>
+    <a class="room-float" href={isRoom ? homeHref : roomHref} aria-label={isRoom ? '返回主页' : '房间'}>
+      <svg width="24" height="28" viewBox="0 0 12 14" shape-rendering="crispEdges">
+        <!-- 像素门框 -->
+        <rect x="1" y="0" width="1" height="14" fill="currentColor"/>
+        <rect x="9" y="0" width="1" height="14" fill="currentColor"/>
+        <rect x="1" y="0" width="8" height="1" fill="currentColor"/>
+        <!-- 像素门面 -->
+        <rect x="2" y="1" width="6" height="13" fill="currentColor" opacity="0.15"/>
+        <!-- 把手 -->
+        <rect x="7" y="7" width="1" height="1" fill="currentColor"/>
       </svg>
       <span class="room-float-tip">
         {isRoom

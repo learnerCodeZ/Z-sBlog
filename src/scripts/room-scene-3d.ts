@@ -1,6 +1,40 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+
+// 像素化 shader
+const PixelationShader = {
+  uniforms: {
+    tDiffuse: { value: null as THREE.Texture | null },
+    pixelSize: { value: 6 },
+    resolution: { value: new THREE.Vector2(1, 1) },
+  },
+  vertexShader: `
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `,
+  fragmentShader: `
+    uniform sampler2D tDiffuse;
+    uniform float pixelSize;
+    uniform vec2 resolution;
+    varying vec2 vUv;
+    void main() {
+      float dx = pixelSize / resolution.x;
+      float dy = pixelSize / resolution.y;
+      vec2 coord = vec2(
+        dx * (floor(vUv.x / dx) + 0.5),
+        dy * (floor(vUv.y / dy) + 0.5)
+      );
+      gl_FragColor = texture2D(tDiffuse, coord);
+    }
+  `,
+};
 
 /**
  * 3D 房间 —— 纯 Three.js（命令式）。
@@ -516,10 +550,29 @@ export function initRoom(container: HTMLElement): () => void {
     attributeFilter: ['class'],
   });
 
+  // 后处理：像素化
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  const pixelationPass = new ShaderPass(PixelationShader);
+  composer.addPass(pixelationPass);
+  composer.setPixelRatio(renderer.getPixelRatio());
+  composer.setSize(container.clientWidth, container.clientHeight);
+  pixelationPass.uniforms.resolution.value.set(
+    container.clientWidth,
+    container.clientHeight
+  );
+
+  let pixelMode = true; // 默认开启像素模式
+
   const onResize = () => {
     camera.aspect = container.clientWidth / container.clientHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(container.clientWidth, container.clientHeight);
+    composer.setSize(container.clientWidth, container.clientHeight);
+    pixelationPass.uniforms.resolution.value.set(
+      container.clientWidth,
+      container.clientHeight
+    );
   };
   window.addEventListener('resize', onResize);
 
@@ -532,15 +585,29 @@ export function initRoom(container: HTMLElement): () => void {
     chairTop.rotation.y += chairSpin;
     chairSpin *= 0.97;
     controls.update();
-    renderer.render(scene, camera);
+    if (pixelMode) {
+      composer.render();
+    } else {
+      renderer.render(scene, camera);
+    }
   };
   animate();
+
+  // 像素模式 toggle（按 P 键）
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'p' || e.key === 'P') {
+      pixelMode = !pixelMode;
+    }
+  };
+  window.addEventListener('keydown', onKey);
 
   return () => {
     cancelAnimationFrame(raf);
     obs.disconnect();
     window.removeEventListener('resize', onResize);
+    window.removeEventListener('keydown', onKey);
     controls.dispose();
+    composer.dispose();
     renderer.dispose();
     if (renderer.domElement.parentNode === container) {
       container.removeChild(renderer.domElement);

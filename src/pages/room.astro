@@ -10,19 +10,26 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <script>
-  import { initRoom } from '../scripts/room-scene';
+  import { initRoom2D } from '../scripts/room-2d-3d';
   const el = document.getElementById('room');
-  let cleanup: (() => void) | undefined;
-  if (el) cleanup = initRoom(el as HTMLElement);
+  if (el) initRoom2D(el as HTMLElement);
 </script>
 
 <style>
   .room-wrap {
     width: 100%;
     height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
   }
   :global(.room-wrap canvas) {
-    display: block;
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 8px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   }
 
   .room-tip {
