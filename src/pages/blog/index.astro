@@ -83,10 +83,10 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
   }
   .tab {
     background: none;
-    border: 1px solid var(--color-border);
+    border: 2px solid var(--color-border);
     color: var(--color-text-muted);
     padding: 0.4rem 1rem;
-    border-radius: 999px;
+    border-radius: 0;
     cursor: pointer;
     font-size: 0.9rem;
     font-family: inherit;
@@ -105,7 +105,7 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
     margin: 0;
   }
   .post-list li {
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px dashed var(--color-border);
   }
   .post-item {
     display: flex;
@@ -173,8 +173,9 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
     font-size: 0.72rem;
     color: var(--color-accent);
     border: 1px solid var(--color-border);
+    border-left: 2px solid var(--color-accent);
     padding: 0.1rem 0.45rem;
-    border-radius: 999px;
+    border-radius: 0;
   }
   .post-read {
     color: var(--color-text-muted);

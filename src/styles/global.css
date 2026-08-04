@@ -79,6 +79,17 @@ a:hover {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 0 0 2rem;
+  position: relative;
+  padding-left: 0.8rem;
+}
+.container h1::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.15em;
+  bottom: 0.15em;
+  width: 5px;
+  background: var(--color-accent);
 }
 
 .empty {
@@ -101,7 +112,7 @@ html[lang='en'] [data-en] {
 }
 
 footer {
-  border-top: 1px solid var(--color-border);
+  border-top: 2px dashed var(--color-border);
   margin-top: 2rem;
 }
 .footer-inner {
