@@ -35,6 +35,42 @@ import Base from '../layouts/Base.astro';
     box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
   }
 
+  /* 平移舞台 + 左右按钮 */
+  :global(.room-stage) {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+  }
+  :global(.room-pan) {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 36px;
+    height: 52px;
+    border: 2px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 5;
+    opacity: 0.65;
+    transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+  }
+  :global(.room-pan:hover:not(:disabled)) {
+    opacity: 1;
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+  :global(.room-pan:disabled) {
+    opacity: 0.2;
+    cursor: default;
+  }
+  :global(.room-pan-left) { left: 8px; }
+  :global(.room-pan-right) { right: 8px; }
+
   .room-tip {
     display: none;
     position: fixed;

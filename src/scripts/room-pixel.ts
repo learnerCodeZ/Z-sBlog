@@ -7,9 +7,10 @@
 
 type Ctx = CanvasRenderingContext2D;
 
-const LW = 480; // 逻辑宽
+const LW = 480; // 视口宽（可见 canvas 宽）
 const LH = 300; // 逻辑高
 const WALL_H = 78; // 后墙高度
+const SCENE_W = 680; // 场景总宽（> 视口，可左右平移探索）
 
 // === 基础工具（沿用 room-2d-3d.ts 的成熟写法） ===
 
@@ -134,14 +135,14 @@ type Pal = ReturnType<typeof pal>;
 
 // --- 后墙 ---
 function drawWall(ctx: Ctx, P: Pal) {
-  px(ctx, 0, 0, LW, WALL_H, P.wall);
+  px(ctx, 0, 0, SCENE_W, WALL_H, P.wall);
   // 横向护墙板纹理
-  for (let y = 14; y < WALL_H - 8; y += 16) px(ctx, 0, y, LW, 1, P.wallDark);
-  px(ctx, 0, 8, LW, 1, P.wallLight);
+  for (let y = 14; y < WALL_H - 8; y += 16) px(ctx, 0, y, SCENE_W, 1, P.wallDark);
+  px(ctx, 0, 8, SCENE_W, 1, P.wallLight);
   // 踢脚线
-  px(ctx, 0, WALL_H - 6, LW, 6, P.base);
-  px(ctx, 0, WALL_H - 6, LW, 1, adj(P.base, -18));
-  px(ctx, 0, WALL_H, LW, 1, P.outline);
+  px(ctx, 0, WALL_H - 6, SCENE_W, 6, P.base);
+  px(ctx, 0, WALL_H - 6, SCENE_W, 1, adj(P.base, -18));
+  px(ctx, 0, WALL_H, SCENE_W, 1, P.outline);
 }
 
 // --- 窗户（左上墙） ---
@@ -218,11 +219,11 @@ function drawWallPoster(ctx: Ctx, P: Pal) {
 
 // --- 地板 ---
 function drawFloor(ctx: Ctx, P: Pal) {
-  px(ctx, 0, WALL_H + 1, LW, LH - WALL_H - 1, P.floor);
+  px(ctx, 0, WALL_H + 1, SCENE_W, LH - WALL_H - 1, P.floor);
   // 木地板纹理（横向通铺条纹 + 板缝）
   for (let y = WALL_H + 1; y < LH; y += 18) {
-    px(ctx, 0, y, LW, 1, P.floorDark); // 板缝
-    for (let x = 0; x < LW; x += 64) {
+    px(ctx, 0, y, SCENE_W, 1, P.floorDark); // 板缝
+    for (let x = 0; x < SCENE_W; x += 64) {
       const off = ((y / 18) % 2) * 32; // 错缝
       px(ctx, x + off, y, 1, 18, P.floorDark);
       // 木纹高光
@@ -588,16 +589,16 @@ function drawPlant(ctx: Ctx, P: Pal, x: number, y: number, scale = 1) {
 }
 
 // === 夜晚辉光叠加 ===
-function drawNightGlow(ctx: Ctx, P: Pal, t: number) {
+function drawNightGlow(ctx: Ctx, P: Pal, t: number, panX: number) {
   const pulse = 0.85 + Math.sin(t * 1.6) * 0.15;
-  // 显示器蓝光
-  radial(ctx, 364, 78, 70 * pulse, 'rgba(125,211,192,0.45)', 'rgba(125,211,192,0)');
+  // 显示器蓝光（场景内，随平移偏移）
+  radial(ctx, 364 - panX, 78, 70 * pulse, 'rgba(125,211,192,0.45)', 'rgba(125,211,192,0)');
   // 台灯暖光
   const flick = 0.9 + Math.sin(t * 5) * 0.05 + Math.sin(t * 13) * 0.03;
-  radial(ctx, 416, 80, 56 * flick, 'rgba(255,200,120,0.45)', 'rgba(255,200,120,0)');
+  radial(ctx, 416 - panX, 80, 56 * flick, 'rgba(255,200,120,0.45)', 'rgba(255,200,120,0)');
   // 宝箱金光（微弱）
-  radial(ctx, 392, 244, 34, 'rgba(255,210,120,0.22)', 'rgba(255,210,120,0)');
-  // 暗角
+  radial(ctx, 392 - panX, 244, 34, 'rgba(255,210,120,0.22)', 'rgba(255,210,120,0)');
+  // 暗角（视口级，不随平移）
   radial(ctx, LW / 2, LH / 2 + 30, 320, 'rgba(0,0,0,0)', 'rgba(0,0,0,0.32)', 'source-over');
   void P;
 }
@@ -673,37 +674,73 @@ function drawScene(ctx: Ctx, P: Pal, day: boolean, t: number) {
 export function initRoomPixel(container: HTMLElement): () => void {
   const [canvas, ctx] = createCanvas(LW, LH);
   canvas.className = 'room-pixel-canvas';
-  container.appendChild(canvas);
 
-  // 离屏静态场景
-  const [sceneCanvas, sceneCtx] = createCanvas(LW, LH);
+  // 舞台：包裹 canvas + 左右平移按钮（房间比视口宽，可左右探索）
+  const stage = document.createElement('div');
+  stage.className = 'room-stage';
+  const mkPan = (side: 'left' | 'right') => {
+    const b = document.createElement('button');
+    b.className = `room-pan room-pan-${side}`;
+    b.type = 'button';
+    b.setAttribute('aria-label', side === 'left' ? '往左看' : '往右看');
+    b.textContent = side === 'left' ? '◀' : '▶';
+    return b;
+  };
+  const panLeft = mkPan('left');
+  const panRight = mkPan('right');
+  stage.appendChild(canvas);
+  stage.appendChild(panLeft);
+  stage.appendChild(panRight);
+  container.appendChild(stage);
+
+  // 离屏静态场景（比视口宽，可平移）
+  const [sceneCanvas, sceneCtx] = createCanvas(SCENE_W, LH);
+  const MAX_PAN = SCENE_W - LW;
 
   let isDay = document.documentElement.classList.contains('light'); // 亮色主题 = 白天
   let P = pal(isDay);
   let hovered: Hotspot | null = null;
+  let panX = 0; // 当前平移（场景坐标偏移）
+  let panTarget = 0; // 目标平移
   let raf = 0;
 
   const rebuildScene = () => {
     P = pal(isDay);
-    sceneCtx.clearRect(0, 0, LW, LH);
+    sceneCtx.clearRect(0, 0, SCENE_W, LH);
     drawScene(sceneCtx, P, isDay, performance.now() / 1000);
   };
   rebuildScene();
 
-  // 仅在「夜晚（辉光动画）」或「悬浮中（描边脉冲）」时跑 RAF；
-  // 白天且无悬浮 → 静态渲染一次，省电。
+  const updatePanButtons = () => {
+    panLeft.disabled = panTarget <= 0.5;
+    panRight.disabled = panTarget >= MAX_PAN - 0.5;
+  };
+  const setPan = (v: number) => {
+    panTarget = Math.max(0, Math.min(MAX_PAN, v));
+    updatePanButtons();
+  };
+  updatePanButtons();
+
+  // 仅在「夜晚 / 悬浮 / 平移中」跑 RAF；动画结束自动停，省电。
+  const isAnimating = () => !isDay || !!hovered || Math.abs(panTarget - panX) > 0.3;
   const renderFrame = () => {
     const t = performance.now() / 1000;
+    // 平移缓动
+    if (Math.abs(panTarget - panX) > 0.3) {
+      panX += (panTarget - panX) * 0.18;
+      if (Math.abs(panTarget - panX) <= 0.3) panX = panTarget;
+    }
+    const ox = Math.round(panX);
     ctx.clearRect(0, 0, LW, LH);
-    ctx.drawImage(sceneCanvas, 0, 0);
-    if (!isDay) drawNightGlow(ctx, P, t);
-    if (hovered) drawHover(ctx, hovered, t);
+    ctx.drawImage(sceneCanvas, -ox, 0);
+    if (!isDay) drawNightGlow(ctx, P, t, ox);
+    if (hovered) drawHover(ctx, { x: hovered.x - ox, y: hovered.y, w: hovered.w, h: hovered.h }, t);
   };
   const startLoop = () => {
     if (raf) return;
     const loop = () => {
       renderFrame();
-      raf = requestAnimationFrame(loop);
+      raf = isAnimating() ? requestAnimationFrame(loop) : 0;
     };
     raf = requestAnimationFrame(loop);
   };
@@ -714,7 +751,7 @@ export function initRoomPixel(container: HTMLElement): () => void {
     }
   };
   const updateLoop = () => {
-    if (!isDay || hovered) startLoop();
+    if (isAnimating()) startLoop();
     else {
       stopLoop();
       renderFrame();
@@ -722,7 +759,7 @@ export function initRoomPixel(container: HTMLElement): () => void {
   };
   updateLoop();
 
-  // 坐标转换：客户端 → 逻辑
+  // 坐标转换：客户端 → 视口逻辑坐标
   const toLogical = (clientX: number, clientY: number) => {
     const r = canvas.getBoundingClientRect();
     return {
@@ -735,8 +772,9 @@ export function initRoomPixel(container: HTMLElement): () => void {
 
   const pick = (clientX: number, clientY: number) => {
     const { x, y } = toLogical(clientX, clientY);
+    const sx = x + panX; // 视口坐标 + 平移 = 场景坐标
     for (const h of HOTSPOTS) {
-      if (x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h;
+      if (sx >= h.x && sx <= h.x + h.w && y >= h.y && y <= h.y + h.h) return h;
     }
     return null;
   };
@@ -775,17 +813,53 @@ export function initRoomPixel(container: HTMLElement): () => void {
     }
   };
 
+  // 左右按钮：每次平移一整段（右侧目前是预留的空地）
+  const PAN_STEP = Math.min(LW, MAX_PAN);
+  panLeft.addEventListener('click', () => { setPan(panTarget - PAN_STEP); updateLoop(); });
+  panRight.addEventListener('click', () => { setPan(panTarget + PAN_STEP); updateLoop(); });
+
+  // 滚轮：水平平移（在画布上时拦截页面滚动）
+  const onWheel = (e: WheelEvent) => {
+    const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (delta === 0) return;
+    e.preventDefault();
+    setPan(panTarget + delta * 0.6);
+    updateLoop();
+  };
+  canvas.addEventListener('wheel', onWheel, { passive: false });
+
   canvas.addEventListener('mousemove', onMove);
   canvas.addEventListener('mouseleave', onLeave);
   canvas.addEventListener('click', onClick);
 
-  // 触摸支持
+  // 触摸：横滑平移，轻点触发热点（用位移阈值区分）
+  let touchStartX = 0;
+  let touchStartPan = 0;
+  let touchMoved = false;
   canvas.addEventListener('touchstart', (e) => {
     const t0 = e.touches[0];
     if (!t0) return;
+    touchStartX = t0.clientX;
+    touchStartPan = panTarget;
+    touchMoved = false;
+  }, { passive: true });
+  canvas.addEventListener('touchmove', (e) => {
+    const t0 = e.touches[0];
+    if (!t0) return;
+    const dx = t0.clientX - touchStartX;
+    if (Math.abs(dx) > 6) {
+      touchMoved = true;
+      const r = canvas.getBoundingClientRect();
+      setPan(touchStartPan - (dx / r.width) * LW);
+      updateLoop();
+    }
+  }, { passive: true });
+  canvas.addEventListener('touchend', (e) => {
+    if (touchMoved) return; // 是平移手势
+    const t0 = e.changedTouches[0];
+    if (!t0) return;
     const h = pick(t0.clientX, t0.clientY);
     if (h) {
-      e.preventDefault();
       if (h.external) window.open(h.action, '_blank', 'noopener');
       else window.location.href = import.meta.env.BASE_URL.replace(/\/$/, '') + h.action;
     }
@@ -808,6 +882,7 @@ export function initRoomPixel(container: HTMLElement): () => void {
     canvas.removeEventListener('mousemove', onMove);
     canvas.removeEventListener('mouseleave', onLeave);
     canvas.removeEventListener('click', onClick);
-    if (canvas.parentNode === container) container.removeChild(canvas);
+    canvas.removeEventListener('wheel', onWheel);
+    if (stage.parentNode === container) container.removeChild(stage);
   };
 }
