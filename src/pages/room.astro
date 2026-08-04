@@ -10,9 +10,9 @@ import Base from '../layouts/Base.astro';
 </Base>
 
 <script>
-  import { initRoom2D } from '../scripts/room-2d-3d';
+  import { initRoomPixel } from '../scripts/room-pixel';
   const el = document.getElementById('room');
-  if (el) initRoom2D(el as HTMLElement);
+  if (el) initRoomPixel(el as HTMLElement);
 </script>
 
 <style>
@@ -25,11 +25,14 @@ import Base from '../layouts/Base.astro';
     padding: 1rem;
     box-sizing: border-box;
   }
-  :global(.room-wrap canvas) {
-    max-width: 100%;
-    max-height: 90vh;
-    border-radius: 8px;
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  /* 像素画：保持 480:300 比例、放大时硬边像素 */
+  :global(.room-wrap canvas.room-pixel-canvas) {
+    image-rendering: pixelated;
+    width: min(96vw, calc(88vh * (480 / 300)));
+    height: auto;
+    aspect-ratio: 480 / 300;
+    border-radius: 4px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.35);
   }
 
   .room-tip {

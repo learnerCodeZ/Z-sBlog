@@ -424,7 +424,7 @@ export function initRoom(container: HTMLElement): () => void {
     if (raycaster.intersectObjects(chairParts).length > 0) {
       chairSpin += 0.12; // 点击拨动转椅
     } else if (raycaster.intersectObject(ep, true).length > 0) {
-      window.location.href = import.meta.env.BASE_URL + '/projects#ep-navigation';
+      window.location.href = import.meta.env.BASE_URL.replace(/\/$/, '') + '/projects#ep-navigation';
     } else if (raycaster.intersectObjects(doorMeshes).length > 0) {
       const hitDoor = raycaster.intersectObjects(doorMeshes);
       const idx = hitDoor[0].object.userData.doorIndex;
@@ -438,7 +438,7 @@ export function initRoom(container: HTMLElement): () => void {
         d.target = d.target !== 0 ? 0 : d.angle;
       }
     } else if (raycaster.intersectObject(board).length > 0) {
-      window.location.href = import.meta.env.BASE_URL + '/guestbook';
+      window.location.href = import.meta.env.BASE_URL.replace(/\/$/, '') + '/guestbook';
     }
   });
 

@@ -7,17 +7,18 @@ import GitHubIcon from './icons/GitHub.astro';
 import BilibiliIcon from './icons/Bilibili.astro';
 
 const path = Astro.url.pathname;
+const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-sBlog'
 ---
 
 <header>
   <nav>
-    <a href="/" class="logo" id="siteLogo">{SITE.name}</a>
+    <a href={`${_base}/`} class="logo" id="siteLogo">{SITE.name}</a>
     <div class="links">
       {
         NAV_LINKS.map((l) => (
           <a
-            href={`${import.meta.env.BASE_URL}${l.href}`}
-            class:list={['nav-link', { active: path.startsWith(l.href) }]}
+            href={`${_base}${l.href}`}
+            class:list={['nav-link', { active: path.startsWith(`${_base}${l.href}`) }]}
           >
             <T k={`nav.${l.href.slice(1)}`} />
           </a>
@@ -99,6 +100,8 @@ const path = Astro.url.pathname;
 
 <script>
   // logo：单点回首页；280ms 内连点 3 次 → 进房间（彩蛋）
+  // 去掉 BASE_URL 末尾的 / 再拼接，避免 dev 下变成协议相对的 //room / //
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   let logoClicks = 0;
   let logoTimer: number | undefined;
   document.getElementById('siteLogo')?.addEventListener('click', (e) => {
@@ -107,10 +110,10 @@ const path = Astro.url.pathname;
     window.clearTimeout(logoTimer);
     if (logoClicks >= 3) {
       logoClicks = 0;
-      window.location.href = import.meta.env.BASE_URL + '/room';
+      window.location.href = base + '/room';
     } else {
       logoTimer = window.setTimeout(() => {
-        window.location.href = import.meta.env.BASE_URL + '/';
+        window.location.href = base + '/';
         logoClicks = 0;
       }, 280);
     }
