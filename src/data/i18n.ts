@@ -26,6 +26,10 @@ export const I18N = {
     comingSoon: { zh: '敬请期待', en: 'Coming soon' },
     toAdd: { zh: '待添加', en: 'To be added' },
   },
+  contact: {
+    title: { zh: '联系方式', en: 'Contact' },
+    email: { zh: '邮箱', en: 'Email' },
+  },
   filter: {
     all: { zh: '全部', en: 'All' },
     article: { zh: '文章', en: 'Articles' },
