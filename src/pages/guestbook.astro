@@ -1,28 +1,37 @@
 ---
 import Base from '../layouts/Base.astro';
 import T from '../components/T.astro';
+
+// Waline 后端地址：构建期从环境变量读取（GitHub Actions vars.WALINE_SERVER_URL）。
+// 没配置时显示「即将上线」。配置方式见 local/notes/留言板-waline部署.md
+const walineURL = import.meta.env.WALINE_SERVER_URL ?? '';
 ---
 
 <Base title="留言">
   <section class="container">
     <h1><T k="guestbook.title" /></h1>
     <p class="gb-intro"><T k="guestbook.intro" /></p>
-    <div id="waline"></div>
+    <div id="waline" class="gb-box" data-url={walineURL}></div>
   </section>
 </Base>
 
 <script>
   import { init } from '@waline/client';
   import '@waline/client/waline.css';
-  const serverURL = 'https://your-waline.vercel.app';
+
   const el = document.getElementById('waline');
-  if (serverURL.includes('your-waline')) {
+  if (el) {
+    const url = el.dataset.url;
     const isEn = document.documentElement.lang === 'en';
-    el.innerHTML = isEn
-      ? '<p style="color:var(--color-text-muted)">Comments coming soon (Waline backend deploying).</p>'
-      : '<p style="color:var(--color-text-muted)">留言功能即将上线（Waline 后端部署中）。</p>';
-  } else {
-    init({ el: '#waline', serverURL });
+    if (url) {
+      // 后端已配置 → 启动 Waline
+      init({ el: '#waline', serverURL: url });
+    } else {
+      // 未配置 → 占位提示（像素风虚线框）
+      el.innerHTML = isEn
+        ? '<p class="gb-soon">Comments coming soon — Waline backend is being deployed.</p>'
+        : '<p class="gb-soon">留言功能即将上线（Waline 后端部署中）。</p>';
+    }
   }
 </script>
 
@@ -30,5 +39,17 @@ import T from '../components/T.astro';
   .gb-intro {
     color: var(--color-text-muted);
     margin: 0 0 2rem;
+  }
+  .gb-box {
+    min-height: 220px;
+  }
+  /* 「即将上线」占位：像素虚线框 */
+  :global(.gb-soon) {
+    display: inline-block;
+    padding: 1rem 1.4rem;
+    border: 2px dashed var(--color-border);
+    border-radius: 0;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
   }
 </style>
