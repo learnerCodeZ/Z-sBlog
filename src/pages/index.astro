@@ -323,6 +323,12 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
     width: 5px;
     background: var(--color-accent);
   }
+  /* 英文模式：标题用像素字体（像素字体无中文，中文保持可读衬线）*/
+  :global(html[lang='en']) .section-title {
+    font-family: var(--font-pixel);
+    font-size: 0.95rem;
+    font-weight: 400;
+  }
 
   /* 卡片通用 */
   .card {
