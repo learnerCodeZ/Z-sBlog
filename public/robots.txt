@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+
+# 项目页在 /Z-sBlog 子路径下；sitemap 也提交到 Google Search Console 加速收录。
+Sitemap: https://learnerCodeZ.github.io/Z-sBlog/sitemap-index.xml

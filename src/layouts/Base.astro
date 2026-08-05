@@ -35,6 +35,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href={`${_base}/favicon.svg`} />
     <link rel="preload" as="font" type="font/woff2" href={pixelFont} crossorigin />
+    <link rel="alternate" type="application/rss+xml" title={siteName} href={`${_base}/rss.xml`} />
     <title>{title ? `${title} · ${siteName}` : siteName}</title>
     <meta name="description" content={description} />
     <!-- 防止刷新时主题闪烁：在渲染前就应用已存的主题 -->
@@ -57,7 +58,7 @@ try {
     <footer>
       <div class="footer-inner">
         <span>© learnerCodeZ</span>
-        <span class="footer-meta">Established late July 2026 · Last updated {lastUpdated}</span>
+        <span class="footer-meta">Established late July 2026 · Last updated {lastUpdated} · <a class="footer-rss" href={`${_base}/rss.xml`}>RSS</a></span>
       </div>
     </footer>
     <a class="room-float" href={isRoom ? homeHref : roomHref} aria-label={isRoom ? '返回主页' : '房间'}>

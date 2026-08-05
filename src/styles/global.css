@@ -141,6 +141,11 @@ footer {
 .footer-inner a:hover {
   color: var(--color-accent);
 }
+.footer-rss {
+  font-family: var(--font-pixel);
+  font-size: 0.62rem;
+  vertical-align: middle;
+}
 
 /* 右下角浮动门（房间彩蛋入口） */
 .room-float {
