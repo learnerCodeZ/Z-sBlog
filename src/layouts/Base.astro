@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import pixelFont from '../fonts/PressStart2P.woff2';
 import { execSync } from 'node:child_process';
 
 interface Props {
@@ -33,9 +34,7 @@ try {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href={`${_base}/favicon.svg`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+    <link rel="preload" as="font" type="font/woff2" href={pixelFont} crossorigin />
     <title>{title ? `${title} · ${siteName}` : siteName}</title>
     <meta name="description" content={description} />
     <!-- 防止刷新时主题闪烁：在渲染前就应用已存的主题 -->
