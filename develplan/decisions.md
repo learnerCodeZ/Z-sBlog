@@ -14,15 +14,15 @@
 - **视觉调性：像素 RPG 外壳 + 可读正文**（2026-08 定）。主站套像素游戏风外壳（像素字体 logo / 直角描边卡片 / 像素分割线），正文保持系统字体可读。详见 `AGENTS.md`「像素风格指南」、`design.md`。
 - **房间设计：俯视 3/4 像素 RPG 房间**（2026-08 完成）。纯 Canvas 2D（`room-pixel.ts`），可点击家具 / 机器人 / 宝箱，昼夜联动。曾试 Three.js / R3F，因兼容 + 效果弃用，旧代码归档。
 - **亮 / 暗双主题**：都做，默认暗色；CSS 变量 + `html.light` + `localStorage` + 防闪烁 inline script。
+- **评论系统：Waline**（2026-08 上线）。后端跑在 Render（Docker 镜像 `lizheming/waline`，免费层），评论以 CSV 存在一个 GitHub 私有仓库（`GITHUB_TOKEN/REPO/PATH`）。Waline 不支持 `MONGO_URI`；空仓库首次读取会崩，需预建表头 CSV。详见 `local/notes/留言板-waline部署.md`。
 
 ## 待定（Do not auto-decide）
 
 - **首页 hero 文案 / 一句话定位**。
-- **评论系统最终选型**（Waline / Artalk / 其他）。建议 Waline。
 - **GitHub 仓库策略**：用 `learnerCodeZ.github.io`（根路径，最省心，推荐）还是普通仓库名（带子路径）。（用户名已定：learnerCodeZ）
 - **自有域名**：具体域名。
 - **License**。
-- **是否做** 站内搜索（Pagefind）、RSS、标签页、sitemap、OG 图（建议都做，待确认）。
+- **是否做** 站内搜索（Pagefind）、标签页、OG 图（建议做，待确认）。RSS + sitemap + robots ✅ 已做。
 
 ## 实现顺序
 

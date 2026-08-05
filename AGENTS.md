@@ -14,7 +14,7 @@
 
 ## 技术栈
 
-Astro（静态优先，零 React）· 纯 Canvas 2D 像素画房间（`room-pixel.ts`）· 手写 CSS + CSS 变量 · Press Start 2P 像素字体 · content collections · Waline（留言，待定）
+Astro（静态优先，零 React）· 纯 Canvas 2D 像素画房间（`room-pixel.ts`）· 手写 CSS + CSS 变量 · Press Start 2P 像素字体 · content collections · Waline 留言（Render 后端 + GitHub 存储，已上线）
 
 ## 像素风格指南
 

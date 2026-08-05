@@ -23,7 +23,7 @@
 | 动效 | framer motion（克制使用） | 仅 hero / 卡片等点睛处 |
 | 样式 | 手写 CSS + CSS 变量 | 轻量、零依赖、亮暗用变量切换 |
 | 内容模型 | Astro content collections | 文章 / 随笔 双集合 |
-| 评论 | Waline（待定） | 可匿名、国内友好 |
+| 评论 | Waline（Render 后端 + GitHub 存储） | 匿名评论，已上线 |
 | 搜索 | Pagefind | 纯静态、构建期生成 |
 | 部署 | GitHub Pages ✅ | https://learnerCodeZ.github.io/Z-sBlog |
 

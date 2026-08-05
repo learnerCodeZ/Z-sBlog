@@ -9,7 +9,7 @@
 | `/blog` | 博客列表 | 文章 + 随笔统一展示，带 全部/文章/随笔 tab 筛选 |
 | `/blog/[slug]` | 博客详情 | 代码高亮、tags、type 标签 |
 | `/projects` | 项目展柜 | 带状态徽章（待做） |
-| `/guestbook` | 匿名留言 | 接 Waline（待定） |
+| `/guestbook` | 匿名留言 | Waline（Render + GitHub 存储，已上线） |
 | `/room` | 3D 子页面 | 独立懒加载，见 design.md |
 
 ## 内容模型
