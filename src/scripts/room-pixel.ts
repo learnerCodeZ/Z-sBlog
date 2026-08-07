@@ -201,20 +201,101 @@ function drawBoard(ctx: Ctx, P: Pal) {
 }
 
 // --- 墙上小海报（科技装饰） ---
-function drawWallPoster(ctx: Ctx, P: Pal) {
+function drawWallPoster(ctx: Ctx, P: Pal, day: boolean) {
   const x = 308, y = 16, w = 44, h = 44;
-  shadow(ctx, x + 2, y + 2, w, h, 0.12);
-  px(ctx, x, y, w, h, '#2a2a35');
-  px(ctx, x, y, w, h, '#2a2a35');
-  px(ctx, x, y, w, 4, '#3a3a48');
-  // 像素小人/ logo 装饰
-  px(ctx, x + 14, y + 10, 16, 16, '#e8b166');
-  px(ctx, x + 12, y + 12, 4, 4, '#e8b166');
-  px(ctx, x + 28, y + 12, 4, 4, '#e8b166');
-  px(ctx, x + 18, y + 18, 8, 2, '#2a2a35');
-  px(ctx, x + 14, y + 30, 16, 2, '#7dd3c0');
-  px(ctx, x + 16, y + 34, 12, 2, '#c04040');
-  px(ctx, x + 1, y + 1, w - 2, 1, adj('#2a2a35', 30));
+  // 悬挂阴影 + 墙钉
+  shadow(ctx, x + 2, y + 3, w, h, 0.14);
+  px(ctx, x + w / 2 - 1, y - 1, 2, 1, P.metalDark);
+  // 深色外框
+  px(ctx, x, y, w, h, P.outline);
+  px(ctx, x, y, w, 1, adj(P.outline, 35)); // 框顶高光
+
+  const ix = x + 2, iy = y + 2, iw = w - 4, ih = h - 4; // 内容区 40×40
+
+  // —— 配色（日夜）——
+  const skyTop = day ? '#9ec8e8' : '#0a1228';
+  const skyBot = day ? '#cfe8f8' : '#16244a';
+  const skyline = day ? '#5a6a7e' : '#05080e';
+  const win = day ? '#a89060' : '#ffd86b';
+  const red = day ? '#e83838' : '#c82828';
+  const blue = day ? '#3858d8' : '#2438a0';
+  const eye = '#f4f4f8';
+  const web = day ? '#ffffff' : '#cfd8ff';
+
+  // 1) 天空渐变
+  const half = Math.floor(ih / 2);
+  px(ctx, ix, iy, iw, half, skyTop);
+  px(ctx, ix, iy + half, iw, ih - half, skyBot);
+  if (day) {
+    px(ctx, ix + 4, iy + 4, 6, 2, '#ffffff');   // 淡云
+    px(ctx, ix + 24, iy + 6, 5, 2, '#ffffff');
+  } else {
+    px(ctx, ix + 5, iy + 3, 1, 1, '#ffffff');   // 星点
+    px(ctx, ix + 14, iy + 6, 1, 1, '#cfd8ff');
+    px(ctx, ix + 20, iy + 2, 1, 1, '#ffffff');
+    px(ctx, ix + 33, iy + 7, 1, 1, '#e8ecff');
+  }
+
+  // 2) 蛛网（右上角，从角点放射）
+  const cwx = ix + iw - 1, cwy = iy;
+  for (let i = 1; i <= 4; i++) {
+    px(ctx, cwx - i, cwy, 1, 1, web);
+    px(ctx, cwx, cwy + i, 1, 1, web);
+  }
+  px(ctx, cwx - 3, cwy + 2, 1, 1, web);
+  px(ctx, cwx - 5, cwy + 4, 1, 1, web);
+  px(ctx, cwx - 2, cwy + 3, 1, 1, web);
+
+  // 3) 蜘蛛侠（单手抓蛛丝悬挂 + 弓步：纽约上空飞荡的瞬间）
+  //    局部原点 sx,sy = 内容区 (10,3)；右手高举扯丝，左手左下伸展，弓步腿
+  const sx = ix + 10, sy = iy + 3;
+  // 蛛丝（从高举的右手向上，粘在海报顶框，像从画面外垂下）
+  px(ctx, sx + 15, iy, 4, 1, web);
+  px(ctx, sx + 17, iy + 1, 1, 5, web);
+  // 头（红圆角块，面朝观众）+ 大白眼 + 黑眼眶
+  px(ctx, sx + 6, sy, 8, 1, red);
+  px(ctx, sx + 5, sy + 1, 10, 4, red);
+  px(ctx, sx + 6, sy + 5, 8, 1, red);
+  px(ctx, sx + 5, sy + 2, 3, 2, eye);
+  px(ctx, sx + 11, sy + 2, 3, 2, eye);
+  px(ctx, sx + 5, sy + 4, 3, 1, P.outline);
+  px(ctx, sx + 11, sy + 4, 3, 1, P.outline);
+  // 右臂高举抓丝（肩→上臂→手）
+  px(ctx, sx + 12, sy + 6, 4, 2, red);
+  px(ctx, sx + 14, sy + 4, 3, 2, red);
+  px(ctx, sx + 16, sy + 2, 3, 2, red);
+  // 躯干（红）+ 蛛网纹
+  px(ctx, sx + 6, sy + 6, 6, 5, red);
+  px(ctx, sx + 7, sy + 8, 4, 1, P.outline);
+  px(ctx, sx + 9, sy + 10, 2, 1, P.outline);
+  // 左臂向左下伸展（肩→上臂→手）
+  px(ctx, sx + 4, sy + 6, 3, 2, red);
+  px(ctx, sx + 1, sy + 8, 3, 2, red);
+  px(ctx, sx, sy + 10, 2, 2, red);
+  // 腰（蓝）
+  px(ctx, sx + 6, sy + 11, 8, 2, blue);
+  // 腿（弓步：左腿前伸向左下，右腿向后下）
+  px(ctx, sx + 3, sy + 13, 4, 2, blue);
+  px(ctx, sx + 1, sy + 15, 3, 4, blue);
+  px(ctx, sx + 1, sy + 19, 3, 1, P.outline);
+  px(ctx, sx + 12, sy + 13, 4, 2, blue);
+  px(ctx, sx + 13, sy + 15, 3, 4, blue);
+  px(ctx, sx + 13, sy + 19, 3, 1, P.outline);
+
+  // 4) 纽约天际线（底部）+ 窗户
+  const slY = iy + ih - 12; // 楼底对齐内容区底
+  const blds: [number, number, number][] = [
+    [0, 5, 8], [5, 4, 11], [10, 6, 7], [16, 3, 9],
+    [19, 5, 6], [24, 4, 10], [28, 5, 7], [33, 7, 11],
+  ];
+  for (const [bx, bw, bh] of blds)
+    px(ctx, ix + bx, slY + (12 - bh), bw, bh, skyline);
+  const wins: [number, number][] = day
+    ? [[6, 3], [12, 7], [17, 6], [22, 8], [25, 5], [29, 7], [34, 5]]
+    : [[1, 7], [2, 6], [6, 2], [6, 8], [11, 6], [12, 9], [17, 5],
+       [20, 7], [22, 9], [25, 4], [25, 8], [29, 6], [30, 9], [34, 3], [35, 7], [37, 4], [38, 9]];
+  for (const [wx, wy] of wins)
+    px(ctx, ix + wx, slY + wy, 1, 1, win);
 }
 
 // --- 地板 ---
@@ -656,7 +737,7 @@ const HOTSPOTS: Hotspot[] = [
 function drawScene(ctx: Ctx, P: Pal, day: boolean, t: number) {
   drawWall(ctx, P);
   drawWindow(ctx, P, day);
-  drawWallPoster(ctx, P);
+  drawWallPoster(ctx, P, day);
   drawBoard(ctx, P);
   drawFloor(ctx, P);
   drawRug(ctx, P);
