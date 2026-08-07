@@ -22,4 +22,15 @@ export const PROJECTS: Project[] = [
     date: '2026-07-06',
     published: '2026-08-02',
   },
+  {
+    name: 'Exam Prep Ultra',
+    slug: 'exam-prep-ultra',
+    repo: 'exam-prep-ultra',
+    description: '全栈刷题 App，导入 Word/Markdown/PDF 题库即选即判，含用户系统与好友共享（Cloudflare D1+KV+Pages）',
+    tags: ['Cloudflare Pages', 'D1', 'KV', '全栈', 'JavaScript'],
+    link: 'https://github.com/learnerCodeZ/exam-prep-ultra',
+    status: 'active',
+    date: '2026-07-08',
+    published: '2026-08-07',
+  },
 ];
