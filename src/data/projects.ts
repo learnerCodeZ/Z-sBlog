@@ -24,7 +24,7 @@ export const PROJECTS: Project[] = [
     published: '2026-08-02',
   },
   {
-    name: '考试刷题 Ultra',
+    name: '期末刷题宝典',
     slug: 'exam-prep-ultra',
     repo: 'exam-prep-ultra',
     description: '全栈刷题 App，导入 Word/Markdown/PDF 题库即选即判，含用户系统与好友共享（Cloudflare D1+KV+Pages）',
