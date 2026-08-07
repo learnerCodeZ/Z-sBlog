@@ -5,6 +5,7 @@ export interface Project {
   description: string;
   tags: string[];
   link: string;
+  demo?: string;
   status: 'active' | 'maintained' | 'archived';
   date: string;
   published: string;
@@ -29,6 +30,7 @@ export const PROJECTS: Project[] = [
     description: '全栈刷题 App，导入 Word/Markdown/PDF 题库即选即判，含用户系统与好友共享（Cloudflare D1+KV+Pages）',
     tags: ['Cloudflare Pages', 'D1', 'KV', '全栈', 'JavaScript'],
     link: 'https://github.com/learnerCodeZ/exam-prep-ultra',
+    demo: 'https://exam-prep-ultra.pages.dev/',
     status: 'active',
     date: '2026-07-08',
     published: '2026-08-07',

@@ -22,6 +22,16 @@ const statusText = (s: string) =>
               </div>
               <span class="pl-desc">{p.description}</span>
               <span class="pl-tags">{p.tags.join(' · ')}</span>
+              {p.demo && (
+                <a class="pl-demo" href={p.demo} target="_blank" rel="noopener">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  {p.demo.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
+                </a>
+              )}
               <span class="pl-date">{p.date}</span>
             </div>
             <a class="pl-source" href={p.link} target="_blank" rel="noopener">
@@ -89,6 +99,17 @@ const statusText = (s: string) =>
   .pl-tags {
     color: var(--color-text-muted);
     font-size: 0.85rem;
+  }
+  .pl-demo {
+    color: var(--color-accent);
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    width: fit-content;
+  }
+  .pl-demo:hover {
+    text-decoration: underline;
   }
   .pl-date {
     color: var(--color-text-muted);
