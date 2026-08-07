@@ -646,7 +646,8 @@ type Hotspot = {
 const HOTSPOTS: Hotspot[] = [
   { id: 'chest', tipZh: 'GitHub 仓库', tipEn: 'GitHub', action: 'https://github.com/learnerCodeZ', external: true, x: 354, y: 214, w: 78, h: 60 },
   { id: 'robot', tipZh: 'EP小车', tipEn: 'EP Robot', action: '/projects#ep-navigation', x: 14, y: 144, w: 156, h: 122 },
-  { id: 'desk', tipZh: '关于我', tipEn: 'About', action: '/about', x: 286, y: 50, w: 152, h: 140 },
+  { id: 'computer', tipZh: '项目', tipEn: 'Projects', action: '/projects', x: 320, y: 48, w: 88, h: 54 },
+  { id: 'chair', tipZh: '关于我', tipEn: 'About', action: '/about', x: 334, y: 104, w: 50, h: 58 },
   { id: 'bookshelf', tipZh: '博客文章', tipEn: 'Blog', action: '/blog', x: 12, y: 22, w: 82, h: 110 },
   { id: 'board', tipZh: '留言板', tipEn: 'Guestbook', action: '/guestbook', x: 174, y: 10, w: 100, h: 56 },
 ];
