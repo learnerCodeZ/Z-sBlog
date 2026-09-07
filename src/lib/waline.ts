@@ -8,7 +8,7 @@ const BASE = import.meta.env.WALINE_SERVER_URL ?? '';
 export async function fetchPageviews(paths: string[]): Promise<Record<string, number>> {
   if (!BASE || paths.length === 0) return {};
   try {
-    const q = encodeURIComponent(paths.join(','));
+    const q = paths.map(encodeURIComponent).join(',');
     const res = await fetch(`${BASE}/api/article?path=${q}&type=time`, {
       signal: AbortSignal.timeout(10_000),
     });

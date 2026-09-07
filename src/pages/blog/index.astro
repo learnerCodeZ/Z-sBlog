@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import T from '../../components/T.astro';
+import Eye from '../../components/icons/Eye.astro';
 import { getCollection } from 'astro:content';
 import { fetchPageviews } from '../../lib/waline';
 
@@ -55,7 +56,7 @@ const pvs = await fetchPageviews(posts.map((p) => pvPath(p.id)));
                     )}
                     <span class="post-read">{p.data.readTime ?? readingTime(p.body)} min read</span>
                     <span class="post-read">
-                      <span class="waline-pageview-count" data-path={pvPath(p.id)}>{pvs[pvPath(p.id)] ?? ''}</span>{' '}<T k="meta.views" />
+                      <span class="waline-pageview-count" data-path={pvPath(p.id)}>{pvs[pvPath(p.id)] ?? ''}</span><Eye />
                     </span>
                   </div>
                 </div>

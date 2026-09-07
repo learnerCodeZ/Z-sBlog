@@ -1,8 +1,12 @@
 ---
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
+import Eye from '../components/icons/Eye.astro';
 import pixelFont from '../fonts/PressStart2P.woff2';
 import { execSync } from 'node:child_process';
+import { getCollection } from 'astro:content';
+import { PROJECTS } from '../data/projects';
+import { fetchPageviews } from '../lib/waline';
 
 interface Props {
   title?: string;
@@ -16,6 +20,16 @@ const isRoom = Astro.url.pathname.replace(/\/$/, '').endsWith('room');
 const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-sBlog'
 const homeHref = _base + '/';
 const roomHref = _base + '/room';
+
+// 全站总浏览量：构建期拉全部路径求和
+const allPaths = [
+  '/',
+  '/blog/',
+  '/projects/',
+  ...((await getCollection('posts', ({ data }) => !data.draft)).map((p) => `/blog/${p.id}/`)),
+  ...PROJECTS.map((p) => `/projects/${p.slug}/`),
+];
+const totalPvs = Object.values(await fetchPageviews(allPaths)).reduce((a, b) => a + b, 0);
 
 // 最近更新 = git 最后提交日期（构建时注入，静态）
 let lastUpdated = '';
@@ -58,7 +72,7 @@ try {
     <footer>
       <div class="footer-inner">
         <span>© learnerCodeZ</span>
-        <span class="footer-meta">Established late July 2026 · Last updated {lastUpdated} · <a class="footer-rss" href={`${_base}/rss.xml`}>RSS</a></span>
+        <span class="footer-meta">Established late July 2026 · Last updated {lastUpdated} · {totalPvs} <Eye /> · <a class="footer-rss" href={`${_base}/rss.xml`}>RSS</a></span>
       </div>
     </footer>
     <a class="room-float" href={isRoom ? homeHref : roomHref} aria-label={isRoom ? '返回主页' : '房间'}>

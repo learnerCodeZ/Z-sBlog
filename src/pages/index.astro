@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import T from '../components/T.astro';
+import Eye from '../components/icons/Eye.astro';
 import { getCollection } from 'astro:content';
 import { PROJECTS } from '../data/projects';
 import { getI18N } from '../data/i18n';
@@ -51,9 +52,10 @@ const recent: RecentItem[] = [
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const blogItems = allPosts.slice(0, 3);
 
-// 浏览量：构建期批量拉，博客卡片展示
+// 浏览量：构建期批量拉，博客 + 项目卡片展示
 const pvPath = (id: string) => `/blog/${id}/`;
 const blogPvs = await fetchPageviews(blogItems.map((p) => pvPath(p.id)));
+const projPvs = await fetchPageviews(PROJECTS.map((p) => `/projects/${p.slug}/`));
 const RECENT_SLOTS = 5;
 const BLOG_SLOTS = 3;
 const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i);
@@ -131,8 +133,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
               {p.data.summary && <span class="pc-desc">{p.data.summary}</span>}
               <span class="date">
                 {p.data.date.toLocaleDateString('zh-CN')} ·{' '}
-                <span class="waline-pageview-count" data-path={pvPath(p.id)}>{blogPvs[pvPath(p.id)] ?? ''}</span>{' '}
-                <T k="meta.views" />
+                <span class="waline-pageview-count" data-path={pvPath(p.id)}>{blogPvs[pvPath(p.id)] ?? ''}</span><Eye />
               </span>
             </a>
           ))
@@ -177,7 +178,9 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
                   <span class="pc-tag">{t}</span>
                 ))}
               </div>
-              <span class="date">{p.date}</span>
+              <span class="date">
+                {p.published} · <span class="waline-pageview-count" data-path={`/projects/${p.slug}/`}>{projPvs[`/projects/${p.slug}/`] ?? ''}</span><Eye />
+              </span>
             </a>
           ))
         }

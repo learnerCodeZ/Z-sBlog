@@ -1,24 +1,22 @@
 ---
 import Base from '../layouts/Base.astro';
 import T from '../components/T.astro';
+import Eye from '../components/icons/Eye.astro';
 import { PROJECTS } from '../data/projects';
 import { fetchPageviews } from '../lib/waline';
 
 const projects = [...PROJECTS].sort((a, b) => b.published.localeCompare(a.published));
-const pv = (await fetchPageviews(['/projects/']))['/projects/'];
 const statusText = (s: string) =>
   s === 'active' ? '● ACTIVE' : s === 'maintained' ? '◆ MAINTAINED' : '○ ARCHIVED';
+
+// 每项目浏览量：路径 = /projects/<slug>/（独立标识，非真实页面）
+const pvPaths = projects.map(p => `/projects/${p.slug}/`);
+const pvs = await fetchPageviews(pvPaths);
 ---
 
 <Base title="项目">
-  <section class="container" data-pageview="/projects/">
-    <h1>
-      <T k="section.projects" />
-      <span class="pv-badge">
-        <span class="waline-pageview-count" data-path="/projects/">{pv ?? ''}</span>{' '}
-        <T k="meta.views" />
-      </span>
-    </h1>
+  <section class="container">
+    <h1><T k="section.projects" /></h1>
     <ul class="project-list">
       {
         projects.map((p) => (
@@ -40,7 +38,9 @@ const statusText = (s: string) =>
                   {p.demo.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
                 </a>
               )}
-              <span class="pl-date">{p.date}</span>
+              <span class="pl-date">
+                {p.date} · <span class="waline-pageview-count" data-path={`/projects/${p.slug}/`}>{pvs[`/projects/${p.slug}/`] ?? ''}</span><Eye />
+              </span>
             </div>
             <a class="pl-source" href={p.link} target="_blank" rel="noopener">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -54,6 +54,27 @@ const statusText = (s: string) =>
     </ul>
   </section>
 </Base>
+
+<!-- 点击项目链接触发浏览量计数（同一会话内去重） -->
+<script>
+  const url = document.body.dataset.walineUrl ?? '';
+  if (url) {
+    document.querySelectorAll('.project-list a.pl-source, .project-list a.pl-demo').forEach((a) => {
+      a.addEventListener('click', () => {
+        const slug = a.closest('li')?.id;
+        if (!slug) return;
+        const path = `/projects/${slug}/`;
+        if (sessionStorage.getItem(`pv:${path}`)) return;
+        sessionStorage.setItem(`pv:${path}`, '1');
+        fetch(`${url.replace(/\/?$/, '/')}api/article`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path, type: 'time', action: 'inc' }),
+        }).catch(() => {});
+      });
+    });
+  }
+</script>
 
 <style>
   .project-list {
@@ -122,26 +143,8 @@ const statusText = (s: string) =>
   .pl-date {
     color: var(--color-text-muted);
     font-size: 0.8rem;
-  }
-  /* 页面浏览量徽章：直角 + 2px 描边，数字用像素字体（纯数字合规） */
-  .pv-badge {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.35rem;
-    vertical-align: middle;
-    margin-left: 0.7rem;
-    padding: 0.2rem 0.55rem;
-    border: 2px solid var(--color-border);
-    border-radius: 0;
-    color: var(--color-text-muted);
-    font-size: 0.72rem;
-    font-weight: 400;
-    letter-spacing: 0.03em;
-  }
-  .pv-badge .waline-pageview-count {
-    font-family: var(--font-pixel);
-    font-size: 0.66rem;
-    color: var(--color-accent);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
   .pl-source {
     flex-shrink: 0;

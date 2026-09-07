@@ -21,9 +21,6 @@ export const I18N = {
     essay: { zh: '随笔', en: 'Essay' },
     project: { zh: '项目', en: 'Project' },
   },
-  meta: {
-    views: { zh: '次浏览', en: 'views' },
-  },
   empty: {
     noContent: { zh: '还没有内容。', en: 'No content yet.' },
     comingSoon: { zh: '敬请期待', en: 'Coming soon' },
