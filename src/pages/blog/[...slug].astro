@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import T from '../../components/T.astro';
 import { getCollection, render } from 'astro:content';
+import { fetchPageviews } from '../../lib/waline';
 
 export async function getStaticPaths() {
   const posts = await getCollection('posts', ({ data }) => !data.draft);
@@ -22,6 +23,10 @@ const { Content, headings } = await render(post);
 const { title, date, type, tags, summary } = post.data;
 const tocItems = headings.filter((h) => h.depth <= 3);
 const readMin = post.data.readTime ?? Math.max(1, Math.ceil(post.body.replace(/[#*`>\-\[\]\(\)!|~_]/g, '').replace(/\s+/g, '').length / 400));
+
+// 浏览量：规范路径与部署 base / 未来域名解耦，迁站不劈叉计数
+const pvPath = `/blog/${slug}/`;
+const pv = (await fetchPageviews([pvPath]))[pvPath];
 ---
 
 <Base title={title} description={summary}>
@@ -40,13 +45,14 @@ const readMin = post.data.readTime ?? Math.max(1, Math.ceil(post.body.replace(/[
         </nav>
       </aside>
     )}
-    <article class="article">
+    <article class="article" data-pageview={pvPath}>
       <p class="kind"><T k={type === 'article' ? 'kind.article' : 'kind.essay'} /></p>
       <h1>{title}</h1>
       <p class="meta">
         <time datetime={date.toISOString()}>{date.toLocaleDateString('zh-CN')}</time>
         <span> · {readMin} min read</span>
         {tags.length > 0 && <span> · {tags.join(' / ')}</span>}
+        <span> · <span class="waline-pageview-count" data-path={pvPath}>{pv ?? ''}</span>{' '}<T k="meta.views" /></span>
       </p>
       <Content />
     </article>

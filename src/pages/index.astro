@@ -4,6 +4,7 @@ import T from '../components/T.astro';
 import { getCollection } from 'astro:content';
 import { PROJECTS } from '../data/projects';
 import { getI18N } from '../data/i18n';
+import { fetchPageviews } from '../lib/waline';
 
 const allPosts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
@@ -49,6 +50,10 @@ const recent: RecentItem[] = [
   })),
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 const blogItems = allPosts.slice(0, 3);
+
+// 浏览量：构建期批量拉，博客卡片展示
+const pvPath = (id: string) => `/blog/${id}/`;
+const blogPvs = await fetchPageviews(blogItems.map((p) => pvPath(p.id)));
 const RECENT_SLOTS = 5;
 const BLOG_SLOTS = 3;
 const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i);
@@ -56,7 +61,7 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
 
 <Base>
   <!-- hero -->
-  <section class="wrap hero">
+  <section class="wrap hero" data-pageview="/">
     <p class="meta"><T k="hero.tagline" /></p>
     <h1 class="display">learnerCodeZ</h1>
     <p class="intro"><T k="hero.intro" /></p>
@@ -124,7 +129,11 @@ const range = (n: number) => Array.from({ length: Math.max(0, n) }, (_, i) => i)
               </span>
               <span class="card-title">{p.data.title}</span>
               {p.data.summary && <span class="pc-desc">{p.data.summary}</span>}
-              <span class="date">{p.data.date.toLocaleDateString('zh-CN')}</span>
+              <span class="date">
+                {p.data.date.toLocaleDateString('zh-CN')} ·{' '}
+                <span class="waline-pageview-count" data-path={pvPath(p.id)}>{blogPvs[pvPath(p.id)] ?? ''}</span>{' '}
+                <T k="meta.views" />
+              </span>
             </a>
           ))
         }

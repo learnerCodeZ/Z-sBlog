@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import T from '../../components/T.astro';
 import { getCollection } from 'astro:content';
+import { fetchPageviews } from '../../lib/waline';
 
 const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
@@ -13,10 +14,14 @@ const readingTime = (body: string) => {
 };
 
 const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-sBlog'
+
+// 浏览量：构建期批量拉，卡片回填展示
+const pvPath = (id: string) => `/blog/${id}/`;
+const pvs = await fetchPageviews(posts.map((p) => pvPath(p.id)));
 ---
 
 <Base title="博客">
-  <section class="container">
+  <section class="container" data-pageview="/blog/">
     <h1><T k="section.blog" /></h1>
     <div class="tabs">
       <button class="tab active" data-filter="all"><T k="filter.all" /></button>
@@ -49,6 +54,9 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
                       </span>
                     )}
                     <span class="post-read">{p.data.readTime ?? readingTime(p.body)} min read</span>
+                    <span class="post-read">
+                      <span class="waline-pageview-count" data-path={pvPath(p.id)}>{pvs[pvPath(p.id)] ?? ''}</span>{' '}<T k="meta.views" />
+                    </span>
                   </div>
                 </div>
               </a>

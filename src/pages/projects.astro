@@ -2,15 +2,23 @@
 import Base from '../layouts/Base.astro';
 import T from '../components/T.astro';
 import { PROJECTS } from '../data/projects';
+import { fetchPageviews } from '../lib/waline';
 
 const projects = [...PROJECTS].sort((a, b) => b.published.localeCompare(a.published));
+const pv = (await fetchPageviews(['/projects/']))['/projects/'];
 const statusText = (s: string) =>
   s === 'active' ? '● ACTIVE' : s === 'maintained' ? '◆ MAINTAINED' : '○ ARCHIVED';
 ---
 
 <Base title="项目">
-  <section class="container">
-    <h1><T k="section.projects" /></h1>
+  <section class="container" data-pageview="/projects/">
+    <h1>
+      <T k="section.projects" />
+      <span class="pv-badge">
+        <span class="waline-pageview-count" data-path="/projects/">{pv ?? ''}</span>{' '}
+        <T k="meta.views" />
+      </span>
+    </h1>
     <ul class="project-list">
       {
         projects.map((p) => (
@@ -114,6 +122,26 @@ const statusText = (s: string) =>
   .pl-date {
     color: var(--color-text-muted);
     font-size: 0.8rem;
+  }
+  /* 页面浏览量徽章：直角 + 2px 描边，数字用像素字体（纯数字合规） */
+  .pv-badge {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    vertical-align: middle;
+    margin-left: 0.7rem;
+    padding: 0.2rem 0.55rem;
+    border: 2px solid var(--color-border);
+    border-radius: 0;
+    color: var(--color-text-muted);
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+  }
+  .pv-badge .waline-pageview-count {
+    font-family: var(--font-pixel);
+    font-size: 0.66rem;
+    color: var(--color-accent);
   }
   .pl-source {
     flex-shrink: 0;

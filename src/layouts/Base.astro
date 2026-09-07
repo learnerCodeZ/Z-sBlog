@@ -50,7 +50,7 @@ try {
       })();
     </script>
   </head>
-  <body>
+  <body data-waline-url={import.meta.env.WALINE_SERVER_URL ?? ''}>
     <Nav />
     <main>
       <slot />
@@ -79,5 +79,8 @@ try {
         }
       </span>
     </a>
+    <script>
+      import '../scripts/pageview';
+    </script>
   </body>
 </html>

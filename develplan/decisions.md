@@ -15,6 +15,7 @@
 - **房间设计：俯视 3/4 像素 RPG 房间**（2026-08 完成）。纯 Canvas 2D（`room-pixel.ts`），可点击家具 / 机器人 / 宝箱，昼夜联动。曾试 Three.js / R3F，因兼容 + 效果弃用，旧代码归档。
 - **亮 / 暗双主题**：都做，默认暗色；CSS 变量 + `html.light` + `localStorage` + 防闪烁 inline script。
 - **评论系统：Waline**（2026-08 上线）。后端跑在 Render（Docker 镜像 `lizheming/waline`，免费层），评论以 CSV 存在一个 GitHub 私有仓库（`GITHUB_TOKEN/REPO/PATH`）。Waline 不支持 `MONGO_URI`；空仓库首次读取会崩，需预建表头 CSV。详见 `local/notes/留言板-waline部署.md`。
+- **全站浏览量：复用 Waline pageview**（2026-09-07 上线）。构建期批量拉 `/api/article` 把数字 SSR 进静态 HTML（首屏即完整），访客端 `@waline/client/pageview` 独立 chunk（<1KB gzip）自增 + 回填；数据落在同一私有仓库 `data/Counter.csv`。计数路径与部署 base 解耦（`/blog/<id>/`、`/blog/`、`/projects/`、`/`，不带 `/Z-sBlog` 前缀）。换挡触发：单月浏览几千 / 嫌私有仓库提交多 → 迁 Cloudflare Worker+KV 或换 Waline 存储后端（前端零改动）。方案与 Runbook：`local/todo/浏览量方案.md`。
 
 ## 待定（Do not auto-decide）
 
