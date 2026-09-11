@@ -35,7 +35,33 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
       <LangToggle />
       <ThemeToggle />
     </div>
+    <button
+      class="menu-toggle"
+      id="menuToggle"
+      type="button"
+      aria-label="菜单"
+      aria-expanded="false"
+      aria-controls="mobileMenu"
+    >
+      <svg width="18" height="14" viewBox="0 0 9 7" shape-rendering="crispEdges" aria-hidden="true">
+        <rect x="0" y="0" width="9" height="1" fill="currentColor" />
+        <rect x="0" y="3" width="9" height="1" fill="currentColor" />
+        <rect x="0" y="6" width="9" height="1" fill="currentColor" />
+      </svg>
+    </button>
   </nav>
+  <div class="mobile-menu" id="mobileMenu" hidden>
+    {
+      NAV_LINKS.map((l) => (
+        <a
+          href={`${_base}${l.href}`}
+          class:list={['mobile-link', { active: path.startsWith(`${_base}${l.href}`) }]}
+        >
+          <T k={`nav.${l.href.slice(1)}`} />
+        </a>
+      ))
+    }
+  </div>
 </header>
 
 <style>
@@ -110,10 +136,88 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
     color: var(--color-accent);
     text-decoration: none;
   }
+
+  /* 汉堡：默认隐藏，窄屏显示 */
+  .menu-toggle {
+    display: none;
+    width: 36px;
+    height: 36px;
+    border: 2px solid var(--color-border);
+    border-radius: 0;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    flex-shrink: 0;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .menu-toggle:hover,
+  .menu-toggle[aria-expanded='true'] {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  /* 窄屏：横向链接收起，汉堡出现；宽屏强制藏下拉（防从窄屏拖宽后残留） */
   @media (max-width: 600px) {
     .links {
       display: none;
     }
+    .menu-toggle {
+      display: flex;
+    }
+  }
+  @media (min-width: 601px) {
+    .mobile-menu:not([hidden]) {
+      display: none;
+    }
+  }
+
+  /* 移动端下拉：像素直角面板 */
+  .mobile-menu {
+    display: none;
+    border-top: 2px solid var(--color-border);
+    background: var(--color-surface);
+    padding: 0.4rem 1.5rem 0.8rem;
+  }
+  .mobile-menu:not([hidden]) {
+    display: block;
+  }
+  .mobile-link {
+    display: block;
+    padding: 0.85rem 0.25rem;
+    color: var(--color-text-muted);
+    font-size: 1rem;
+    border-bottom: 1px dashed var(--color-border);
+    position: relative;
+  }
+  .mobile-link:last-child {
+    border-bottom: none;
+  }
+  .mobile-link:hover,
+  .mobile-link.active {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .mobile-link.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.85rem;
+    bottom: 0.85rem;
+    width: 3px;
+    background: repeating-linear-gradient(
+      180deg,
+      var(--color-accent) 0 3px,
+      transparent 3px 6px
+    );
+  }
+  /* 英文模式：与桌面导航一致，像素字体 */
+  :global(html[lang='en']) .mobile-link {
+    font-family: var(--font-pixel);
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
   }
 </style>
 
@@ -137,4 +241,26 @@ const _base = import.meta.env.BASE_URL.replace(/\/$/, ''); // dev: '' prod: '/Z-
       }, 280);
     }
   });
+
+  // 移动端汉堡菜单
+  const toggle = document.getElementById('menuToggle');
+  const menu = document.getElementById('mobileMenu');
+  if (toggle && menu) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      menu.hidden = !open;
+    };
+    toggle.addEventListener('click', () => {
+      setOpen(toggle.getAttribute('aria-expanded') !== 'true');
+    });
+    menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') setOpen(false);
+    });
+    document.addEventListener('click', (e) => {
+      if (!menu.hidden && !menu.contains(e.target as Node) && !toggle.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    });
+  }
 </script>
