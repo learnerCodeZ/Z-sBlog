@@ -42,7 +42,7 @@ Xiaomi MiMo Desktop 我是内测第一天装的。这一周里，改材料、追
 
 MiMo Desktop 不一样。选中就能问，选中就能改。
 
-![选中内容后出现「修改或提问，留空则仅引用」](/images/mimo-desktop/ppt-point-edit.png)
+<img src="../../images/mimo-desktop/ppt-point-edit.png" alt="选中内容后出现「修改或提问，留空则仅引用」" loading="lazy">
 
 我选中幻灯片上一句「像 Wiki 一样好用，而不是一堆 PDF」，界面浮出提示：修改或提问，留空则仅引用。
 
@@ -86,7 +86,7 @@ Smart 不是魔法。路由会不准，回答有时发水。它解决的是每�
 
 同一套交互还有另一面：注释式提问。
 
-![选中片段输入「具体说说」](/images/mimo-desktop/annotation-ask.png)
+<img src="../../images/mimo-desktop/annotation-ask.png" alt="选中片段输入「具体说说」" loading="lazy">
 
 选中一段字，输入「具体说说」。提示还是那两句：输入文字变成注释，留空则仅引用此处。
 
@@ -130,7 +130,7 @@ Smart 不是魔法。路由会不准，回答有时发水。它解决的是每�
 
 ### 过程
 
-![生成任务结果界面](/images/mimo-desktop/pelican-process.png)
+<img src="../../images/mimo-desktop/pelican-process.png" alt="生成任务结果界面" loading="lazy">
 
 | 轮次 | 在干什么 | 用时 | 结果 |
 |------|----------|------|------|
@@ -157,11 +157,11 @@ Smart 不是魔法。路由会不准，回答有时发水。它解决的是每�
 
 第一轮生成，车轮还飘着：
 
-![第一轮：自行车位置问题](/images/mimo-desktop/pelican-v1-first.gif)
+<img src="../../images/mimo-desktop/pelican-v1-first.gif" alt="第一轮：自行车位置问题" loading="lazy">
 
 第二轮自查修改后：
 
-![第二轮：鹈鹕骑上自行车](/images/mimo-desktop/pelican-v2-revised.gif)
+<img src="../../images/mimo-desktop/pelican-v2-revised.gif" alt="第二轮：鹈鹕骑上自行车" loading="lazy">
 
 看着第二只鹈鹕在乡间公路上把车骑稳，有种莫名的完成感——好像不是它修好了动画，是我终于把一道没什么用的题做完了。
 
